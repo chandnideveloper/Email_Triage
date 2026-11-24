@@ -1,0 +1,15 @@
+{
+  "emails": [],
+  "sync_states": [
+    {
+      "mailbox": "triage@example.com",
+      "delta_link": "",
+      "last_sync_time": "",
+      "emails_synced_total": 0,
+      "last_status": "FAILED",
+      "error_code": "GraphAuthError",
+      "updated_at": "2026-11-23T20:41:55.838087+00:00"
+    }
+  ],
+  "subscriptions": []
+}

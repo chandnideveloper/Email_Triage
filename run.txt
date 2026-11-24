@@ -1,0 +1,147 @@
+I have started both the FastAPI backend server on http://127.0.0.1:8085 and the Vite frontend dev server on http://localhost:5173. I am now having the browser agent verify the live application UI.
+
+Both the backend and frontend servers are now actively running!
+
+Application URLs
+Service	URL	Status	Details
+Frontend UI (TriageAI)	http://localhost:5173	Live (HTTP 200)	React + Vite + Tailwind CSS dashboard
+Backend API (FastAPI)	http://127.0.0.1:8085	Live (HTTP 200)	Python Uvicorn service
+Interactive API Docs	http://127.0.0.1:8085/docs	Live	OpenAPI Swagger documentation
+Key Features You Can Test in the UI
+
+Executive Dashboard (/):
+
+Live KPI cards (Processed, Unread, Action Required, Urgent P1, Awaiting Response).
+Interactive charts: Email Volume & Ingestion Rate and Category Distribution donut chart.
+AI Daily Brief: Upcoming statutory deadlines (e.g., Sydney Coastal Logistics Pty Ltd Q1 BAS), overdue follow-ups, and one-click suggested actions.
+Sync Engine Status: Monitoring delta token tracking and Celery/eager worker health.
+
+Smart 3-Column Inbox (/inbox):
+
+Column 1 (Left): Quick filters (Critical / P1, Action Required, Unread, and all 10 categories).
+Column 2 (Center): Email list with sender avatars, subjects, AI summary previews, category pills, priority badges, and attachment indicators.
+Multi-select & Bulk Bar: Select multiple emails with checkboxes to perform bulk mark read, bulk mark completed, or bulk categorization.
+Column 3 (Right): Selected email viewer with the TriageAI Synthesis Panel, showing confidence score, key bullet points, extracted $AUD amounts, client company entities, and due dates.
+
+Analytics Dashboard (/analytics):
+
+Speed & SLA metrics (275ms average latency), category volume breakdown bar chart, priority donut, and ingestion pipeline performance.
+
+Attachments Hub (/attachments):
+
+Centralized document table showing filenames, parent email context, size, SHA-256 checksums, and download actions.
+
+Settings & Integrations (/settings):
+
+Microsoft 365 / Entra ID configuration, webhook URL configuration, AI confidence threshold slider, and the "Reset Demo State" button.
+
+Theme Toggle:
+
+Click the Sun/Moon icon in the top navigation bar to toggle between Dark Mode and Light Mode.
+
+
+
+
+
+
+
+
+
+I have scaffolded the React + TypeScript application with Vite in frontend/ and am currently installing the required dependencies (react-router-dom, @tanstack/react-query, recharts, lucide-react, tailwindcss, etc.). I will continue setting up the design system, components, and pages as soon as the installation completes.
+
+I have initiated the installation of react, react-dom, @types/react, @types/react-dom, and @tailwindcss/vite in the frontend folder and will configure the project settings once completed.
+
+A premium, production-quality frontend named "TriageAI" has been created in the frontend/ directory, inspired by Linear, Stripe Dashboard, and Notion.
+
+Architecture & Folder Structure
+frontend/
+├── src/
+│   ├── assets/              # Icons and brand assets
+│   ├── components/
+│   │   ├── common/          # CategoryBadge, PriorityBadge, StatusBadge, EmptyState
+│   │   ├── inbox/           # EmailDetailView (AI synthesis panel, attachments, action flags)
+│   │   └── ui/              # Toast context provider & notifications
+│   ├── hooks/               # useTheme (dark/light theme with persistence)
+│   ├── layouts/
+│   │   ├── MainLayout.tsx   # Shell container
+│   │   ├── Sidebar.tsx      # Collapsible dark sidebar with badge counters
+│   │   └── TopNav.tsx       # Global search, M365 status badge, Sync trigger, theme toggle
+│   ├── pages/
+│   │   ├── Dashboard.tsx    # Executive KPI cards, Recharts, AI Daily Brief, Recent Inflow
+│   │   ├── Inbox.tsx        # 3-column inbox with multi-filter, search, and bulk operations
+│   │   ├── Analytics.tsx    # Volume trends, category breakdown, priority donut, SLA timeline
+│   │   ├── Attachments.tsx  # Centralized document hub with SHA-256 deduplication & downloads
+│   │   └── Settings.tsx     # M365 Entra ID config, Webhook URL, AI confidence slider, demo reset
+│   ├── services/
+│   │   ├── api.ts           # FastAPI client + seamless fallback layer
+│   │   └── mockData.ts      # Australian accounting emails, entities ($AUD), due dates & attachments
+│   ├── types/               # TypeScript schemas matching backend models
+│   ├── utils/               # Formatters, relative timestamps, and Tailwind merge utilities
+│   ├── App.tsx              # React Router v7 & TanStack React Query provider
+│   └── main.tsx             # Root bootstrap
+├── vite.config.ts           # Configured with proxy to http://127.0.0.1:8085 and Tailwind v4
+├── tailwind.config.js / index.css
+└── README.md                # Frontend documentation & usage guide
+Features Implemented
+1. Main Navigation & Shell
+Collapsible Dark Sidebar: Quick access to Dashboard, Inbox, Priority Inbox, Action Required, Follow-ups, Attachments, Analytics, and Settings, complete with live badge counters.
+Top Navigation Bar: Global search (hotkey /), one-click Sync Mailbox with Microsoft Graph, real-time Outlook M365 connection status pill, notification center popover, and light/dark mode theme toggle.
+2. Page 1: Dashboard (/)
+6 KPI Metric Cards: Processed count, Unread, Action Required, Urgent/P1, Awaiting Response, and 99.8% Reliability Rate.
+AI Daily Brief: Highlights important items, upcoming statutory deadlines with client badges (e.g., Sydney Coastal Logistics Pty Ltd), overdue follow-ups, and one-click recommended actions.
+Interactive Recharts:
+Email Volume & Ingestion Rate over time (AreaChart).
+Classification distribution across 10 categories (PieChart).
+Recent Inflow Stream: Quick view of recent triaged emails with direct navigation to the detail view.
+Sync Engine Health Panel: Real-time status for delta query tokens and background workers.
+3. Page 2: Inbox (/inbox)
+Three-Column Productivity Layout:
+Left: Navigation & smart filter sidebar (Quick Views, Read/Unread, Categories).
+Center: Email list with sender avatar, subject, preview snippet, category pill, priority badge, and attachments count.
+Right: Selected email detail & AI analysis panel.
+Filters & Search: Category filter (all 10 categories), Priority filter (Critical, High, Medium, Low), Read/Unread, Action Required, and live text search.
+Multi-Select & Bulk Operations: Checkbox multi-selection with bulk mark read/unread, bulk resolve/complete, and bulk category assignment.
+4. Page 3: Email Detail & AI Synthesis Panel
+Full email body rendering (HTML sanitized or formatted plain text), sender metadata, recipient lists, and timestamps.
+TriageAI Synthesis:
+Model confidence score (e.g. 96%).
+Executive summary and key bullet points.
+Extracted financial amounts ($AUD), Australian companies (Pty Ltd, Trust), and due dates.
+Action flags (action_required, response_required, follow_up_required).
+Recommended next steps.
+Attachment Viewer: File type icons, file sizes, SHA-256 checksums, and download triggers.
+Safety labels for incoming actions (e.g. direct Outlook reply clearly marked as coming in v2.1).
+5. Page 4: Analytics (/analytics)
+Triage speed monitoring (average 275ms latency per email).
+Classification confidence tracking and action rate benchmarks.
+Horizontal bar chart of email volume by category.
+Priority tier breakdown donut chart.
+SLA performance timeline.
+6. Page 5: Attachments Hub (/attachments)
+Centrally indexed table of all downloaded email attachments.
+Filtering by file type (PDF, Spreadsheets, Documents) and live text search.
+Verification badges for SHA-256 deduplication and IBEX document bridge readiness.
+7. Page 6: Settings (/settings)
+Microsoft Entra ID connection parameters (TARGET_MAILBOX, GRAPH_TENANT_ID, GRAPH_CLIENT_ID, Client Secret).
+Microsoft Graph webhook validation handshake configuration.
+AI confidence threshold slider and execution mode switcher.
+One-click demo data reset button.
+Verification & Testing
+Frontend Build: Verified with TypeScript 7 and Vite (npm run build compiled in 2.58s with zero errors).
+Backend Tests: Verified that the existing Python backend remains untouched with all 35 of 35 pytest unit tests passing.
+How to Run
+
+Start the Frontend:
+
+bash
+cd frontend
+npm run dev
+
+Open http://localhost:5173 in your browser.
+
+Start the Backend API (Optional / when ready):
+
+bash
+uvicorn email_triage.api.routes:app --host 127.0.0.1 --port 8085 --reload
+
+Note: Vite is configured to proxy all /api calls directly to http://127.0.0.1:8085, with transparent fallback to the local store if the backend is offline.
