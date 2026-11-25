@@ -53,6 +53,21 @@ class TriageEngine:
 
         summary, key_points, suggested_action = self.summarizer.summarize(email, category, priority)
 
+        # Highlight extracted invoice and supplier details in key points
+        if entities.get("invoice_number") or entities.get("total_amount"):
+            inv_str = entities.get("invoice_number") or "Invoice"
+            tot_str = entities.get("total_amount") or ""
+            supp_str = entities.get("supplier_name") or (entities.get("companies", [""])[0] if entities.get("companies") else "")
+            summary_bullet = f"Invoice #{inv_str}"
+            if tot_str:
+                summary_bullet += f" totaling {tot_str}"
+            if supp_str:
+                summary_bullet += f" from {supp_str}"
+            if entities.get("due_date"):
+                summary_bullet += f" (Due: {entities['due_date']})"
+            if summary_bullet not in key_points:
+                key_points.insert(0, summary_bullet)
+
         # If Ibex AI classification enriched this email, refine suggested action
         ai_meta = entities.get("ai_classification")
         if ai_meta and isinstance(ai_meta, dict):

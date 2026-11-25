@@ -26,16 +26,20 @@ class RuleBasedSummarizer:
         # Extract sentences from plain body
         sentences = [
             s.strip()
-            for s in re.split(r"(?<=[.!?])\s+", plain_body)
-            if len(s.strip()) > 15
+            for s in re.split(r"(?<=[.!?\n])\s+", plain_body)
+            if len(s.strip()) > 3
         ]
 
-        # 1. Short Summary
-        if sentences:
-            primary_sentence = sentences[0][:200]
-            summary = f"Email from {sender} regarding '{subject}'. {primary_sentence}"
+        # 1. Short Summary - preserve real text without generic templates
+        if plain_body:
+            if len(plain_body) <= 150:
+                summary = plain_body
+            elif sentences:
+                summary = sentences[0][:200]
+            else:
+                summary = plain_body[:200]
         else:
-            summary = f"Email from {sender} regarding '{subject}'."
+            summary = f"Message from {sender} regarding '{subject}'."
 
         # 2. Key Points
         key_points: list[str] = []

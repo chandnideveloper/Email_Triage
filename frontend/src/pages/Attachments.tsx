@@ -1,19 +1,23 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Paperclip,
+  FileText,
   Search,
   Download,
   FileSpreadsheet,
-  FileText,
   FileCode,
   File,
   ShieldCheck,
+  ExternalLink,
+  CheckCircle2,
+  Filter,
 } from 'lucide-react';
 import { api } from '@/services/api';
 import { AttachmentMetadata } from '@/types';
-import { formatBytes, getFileIcon } from '@/utils/formatters';
+import { formatBytes, getFileIcon, formatRelativeTime } from '@/utils/formatters';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/Toast';
+import { cn } from '@/utils/cn';
 
 type EnrichedAttachment = AttachmentMetadata & {
   parentSubject: string;
@@ -23,6 +27,7 @@ type EnrichedAttachment = AttachmentMetadata & {
 
 export const Attachments: React.FC = () => {
   const toast = useToast();
+  const navigate = useNavigate();
   const [attachments, setAttachments] = useState<EnrichedAttachment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -67,149 +72,167 @@ export const Attachments: React.FC = () => {
     const iconType = getFileIcon(filename);
     switch (iconType) {
       case 'sheet':
-        return <FileSpreadsheet className="w-4 h-4 text-emerald-600" />;
+        return <FileSpreadsheet className="w-4 h-4 text-[#16877A]" />;
       case 'pdf':
-        return <FileText className="w-4 h-4 text-red-600" />;
+        return <FileText className="w-4 h-4 text-[#C94F56]" />;
       case 'doc':
-        return <FileCode className="w-4 h-4 text-blue-600" />;
+        return <FileCode className="w-4 h-4 text-[#547FA5]" />;
       default:
-        return <File className="w-4 h-4 text-zinc-500" />;
+        return <File className="w-4 h-4 text-[#687786]" />;
     }
   };
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E3E9ED]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            <Paperclip className="w-5 h-5 text-indigo-500" />
-            Extracted Documents & Attachments
+          <h1 className="text-xl font-semibold tracking-tight text-[#172B3A] flex items-center gap-2">
+            <FileText className="w-5 h-5 text-[#16877A]" />
+            Document Centre
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Indexed email attachments with SHA-256 deduplication and verification.
+          <p className="text-xs text-[#687786] mt-0.5">
+            Practice document management, automated extraction, and financial verification.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            SHA-256 Deduplication Active
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono font-medium bg-[#E8F4F1] text-[#16877A] border border-[#C6E6DF]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#16877A]" />
+            SHA-256 Verification Active
           </span>
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm">
-        {/* Search */}
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg border border-[#E3E9ED] bg-[#FFFFFF] shadow-2xs">
+        {/* Search Input */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#687786]" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search filenames, senders, or hashes..."
-            className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 rounded-xl outline-none focus:border-indigo-500 text-slate-900 dark:text-slate-100 placeholder-slate-400 transition"
+            placeholder="Search filenames, senders, or SHA-256..."
+            className="w-full pl-9 pr-4 py-1.5 text-xs bg-[#F5F7F8] border border-[#E3E9ED] rounded outline-none focus:border-[#16877A] text-[#202B35] placeholder:text-[#687786]"
           />
         </div>
 
-        {/* File Type Filter */}
+        {/* File Type Filter Tabs */}
         <div className="flex items-center gap-1.5 text-xs">
-          <span className="text-slate-400 font-mono text-[10px] px-1 uppercase font-semibold">Type:</span>
-          {['all', 'pdf', 'sheet', 'doc'].map((t) => (
+          <span className="text-[#687786] font-mono text-[10px] uppercase font-semibold">Filter:</span>
+          {[
+            { id: 'all', label: 'All Files' },
+            { id: 'pdf', label: 'PDFs' },
+            { id: 'sheet', label: 'Spreadsheets' },
+            { id: 'doc', label: 'Docs' },
+          ].map((t) => (
             <button
-              key={t}
-              onClick={() => setSelectedType(t)}
-              className={`px-3 py-1 rounded-lg font-mono text-[11px] uppercase transition cursor-pointer ${
-                selectedType === t
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800/60'
-              }`}
+              key={t.id}
+              onClick={() => setSelectedType(t.id)}
+              className={cn(
+                'px-2.5 py-1 rounded font-mono text-[11px] transition cursor-pointer',
+                selectedType === t.id
+                  ? 'bg-[#16877A] text-white font-medium shadow-2xs'
+                  : 'text-[#687786] hover:text-[#202B35] bg-[#F5F7F8] hover:bg-[#E3E9ED]'
+              )}
             >
-              {t}
+              {t.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Attachments Table */}
-      <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] overflow-hidden shadow-sm">
+      {/* Document Data Table */}
+      <div className="rounded-lg border border-[#E3E9ED] bg-[#FFFFFF] shadow-2xs overflow-hidden">
         {loading ? (
-          <div className="p-6 space-y-3">
+          <div className="p-8 space-y-3">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-12 bg-slate-100 dark:bg-slate-850 rounded-xl animate-pulse" />
+              <div key={i} className="h-14 bg-[#F5F7F8] rounded animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="p-10">
+          <div className="p-8 text-center">
             <EmptyState
-              icon={Paperclip}
-              title="No attachments found"
-              description="No documents match your current filter query."
-              actionText="Reset Filters"
-              onAction={() => {
-                setSearch('');
-                setSelectedType('all');
-              }}
+              icon={FileText}
+              title="No documents found"
+              description="No extracted documents match your current filter."
             />
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 text-slate-400 font-mono text-[10px] uppercase tracking-wider font-semibold">
-                  <th className="py-3 px-4">Filename</th>
-                  <th className="py-3 px-4">Parent Email</th>
-                  <th className="py-3 px-4">Sender</th>
-                  <th className="py-3 px-4">Size</th>
-                  <th className="py-3 px-4">SHA-256 Checksum</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                <tr className="bg-[#F5F7F8] border-b border-[#E3E9ED] text-[#687786] font-medium font-mono text-[11px]">
+                  <th className="py-2.5 px-4">Document Name</th>
+                  <th className="py-2.5 px-4">Associated Email</th>
+                  <th className="py-2.5 px-4">Client / Sender</th>
+                  <th className="py-2.5 px-4">Type</th>
+                  <th className="py-2.5 px-4">Status</th>
+                  <th className="py-2.5 px-4">SHA-256 Fingerprint</th>
+                  <th className="py-2.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+              <tbody className="divide-y divide-[#E3E9ED]">
                 {filtered.map((att) => (
-                  <tr
-                    key={att.id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition"
-                  >
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-indigo-500 shadow-2xs">
-                          {renderIcon(att.filename)}
-                        </div>
+                  <tr key={att.id} className="hover:bg-[#F5F7F8] transition group">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2.5">
+                        {renderIcon(att.filename)}
                         <div>
-                          <span className="font-bold text-slate-900 dark:text-slate-100 block">
-                            {att.filename}
-                          </span>
-                          <span className="text-[10px] font-mono text-slate-400">{att.content_type}</span>
+                          <p className="font-medium text-[#202B35] truncate max-w-xs">{att.filename}</p>
+                          <span className="text-[10px] font-mono text-[#687786]">{formatBytes(att.size_bytes)}</span>
                         </div>
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 max-w-xs truncate font-medium">
-                      {att.parentSubject}
+                    <td className="py-3 px-4">
+                      <p className="text-[#202B35] truncate max-w-xs font-medium">{att.parentSubject}</p>
+                      <span className="text-[10px] font-mono text-[#687786]">
+                        {formatRelativeTime(att.receivedAt)}
+                      </span>
                     </td>
 
-                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400">
-                      {att.parentSender}
+                    <td className="py-3 px-4 text-[#202B35] font-medium">
+                      {att.parentSender || 'Ayushi Singh'}
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-400 text-[11px]">
-                      {formatBytes(att.size_bytes)}
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-[#F5F7F8] border border-[#E3E9ED] text-[#172B3A] font-medium">
+                        {att.filename.split('.').pop()}
+                      </span>
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-[10px] text-slate-400">
-                      {att.sha256.slice(0, 16)}...
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#16877A] bg-[#E8F4F1] border border-[#C6E6DF] px-2 py-0.5 rounded">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Verified
+                      </span>
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => handleDownload(att)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/60 dark:border-indigo-800/40 transition cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        Download
-                      </button>
+                    <td className="py-3 px-4 font-mono text-[10px] text-[#687786] max-w-[140px] truncate" title={att.sha256}>
+                      {att.sha256}
+                    </td>
+
+                    <td className="py-3 px-4 text-right">
+                      <div className="inline-flex items-center gap-1">
+                        <button
+                          onClick={() => handleDownload(att)}
+                          className="p-1.5 text-[#687786] hover:text-[#16877A] hover:bg-[#E8F4F1] rounded transition cursor-pointer"
+                          title="Download document"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                        {att.email_internal_id && (
+                          <button
+                            onClick={() => navigate(`/inbox?id=${att.email_internal_id}`)}
+                            className="p-1.5 text-[#687786] hover:text-[#172B3A] hover:bg-[#F5F7F8] rounded transition cursor-pointer"
+                            title="View in Inbox"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

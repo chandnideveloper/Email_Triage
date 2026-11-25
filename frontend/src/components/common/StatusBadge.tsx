@@ -1,4 +1,5 @@
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 import { ProcessingStatus } from '@/types';
 import { cn } from '@/utils/cn';
 
@@ -12,29 +13,36 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     switch (status) {
       case 'TRIAGED':
       case 'ATTACHMENTS_PROCESSED':
+      case 'COMPLETED':
         return {
-          label: status === 'ATTACHMENTS_PROCESSED' ? 'Attachments Synced' : 'Triaged',
-          bg: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
+          label: status === 'ATTACHMENTS_PROCESSED' ? 'Attachments Synced' : status === 'COMPLETED' ? 'Resolved' : 'Triaged',
+          bg: 'bg-[#E8F4F1] text-[#16877A] border-[#C6E6DF]',
+          isSpinning: false,
         };
+      case 'PENDING':
       case 'INGESTED':
         return {
-          label: 'Ingested',
-          bg: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
+          label: 'Analyzing...',
+          bg: 'bg-[#FBF3E6] text-[#D99A38] border-[#F5E0C2]',
+          isSpinning: true,
         };
       case 'FAILED':
         return {
           label: 'Failed',
-          bg: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800',
+          bg: 'bg-[#FBECEE] text-[#C94F56] border-[#F7D3D6]',
+          isSpinning: false,
         };
       case 'RETRYING':
         return {
           label: 'Retrying',
-          bg: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+          bg: 'bg-[#FBF3E6] text-[#D99A38] border-[#F5E0C2]',
+          isSpinning: true,
         };
       default:
         return {
           label: 'Pending',
-          bg: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
+          bg: 'bg-[#F5F7F8] text-[#687786] border-[#E3E9ED]',
+          isSpinning: false,
         };
     }
   })();
@@ -42,11 +50,12 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
   return (
     <span
       className={cn(
-        'inline-flex items-center font-medium rounded-full border',
+        'inline-flex items-center gap-1 font-medium rounded-[4px] border select-none',
         config.bg,
-        size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-0.5 text-xs'
+        size === 'sm' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-[11px]'
       )}
     >
+      {config.isSpinning && <Loader2 className={cn('animate-spin', size === 'sm' ? 'w-2.5 h-2.5' : 'w-3 h-3')} />}
       {config.label}
     </span>
   );

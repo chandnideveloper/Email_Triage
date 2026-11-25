@@ -78,13 +78,37 @@ class IbexAIClassifier:
     def classify(self, email: EmailRecord) -> tuple[EmailCategory, float]:
         """Calls the AI classification service and enriches email with AI predictions."""
         try:
+            # Extract text from attachments if present
+            attachment_texts = []
+            for att in email.attachments:
+                payload_att = att.ibex_compatible_payload or {}
+                txt = payload_att.get("extracted_text") or ""
+                if not txt and att.storage_path and os.path.exists(att.storage_path):
+                    try:
+                        from email_triage.ingestion.document_extractor import DocumentExtractor
+                        txt = DocumentExtractor().extract_text_from_file(att.storage_path)
+                        if not att.ibex_compatible_payload:
+                            att.ibex_compatible_payload = {}
+                        att.ibex_compatible_payload["extracted_text"] = txt
+                    except Exception as exc:
+                        log.warning("Could not extract attachment %s: %s", att.filename, exc)
+                if txt:
+                    attachment_texts.append(txt)
+
+            att_combined = "\n\n".join(attachment_texts)
+            doc_text = f"{email.body_plain}\n\n{att_combined}".strip() if att_combined else (email.body_plain or "")
+
             # Prepare payload matching IngestionAdapter expectation
             payload: dict[str, Any] = {
                 "email_record": email.to_dict(),
+                "sender": email.sender_email,
+                "sender_name": email.sender_name,
+                "subject": email.subject,
+                "body": email.body_plain,
+                "document_text": doc_text,
+                "filename": email.attachments[0].filename if email.attachments else "unnamed_document.pdf",
+                "has_attachments": bool(email.attachments),
             }
-            # If plain text body exists or attachment has extracted text, send it
-            if email.body_plain:
-                payload["document_text"] = email.body_plain
 
             with httpx.Client(timeout=self.timeout_seconds) as client:
                 resp = client.post(self.endpoint_url, json=payload)
@@ -99,7 +123,7 @@ class IbexAIClassifier:
                 intent_type = intent_info.get("type", "")
 
                 # Priority: urgent intent or urgency keywords elevate category to URGENT
-                text = f"{email.subject} {email.body_plain}".lower()
+                text = f"{email.subject} {email.body_plain} {att_combined}".lower()
                 is_urgent = intent_type == "urgent" or any(w in text for w in ("urgent", "immediately", "emergency", "asap"))
 
                 if is_urgent:
@@ -115,17 +139,52 @@ class IbexAIClassifier:
 
                 # Enrich email entities with deep AI metadata
                 entities = email.triage.entities or {}
+                extracted_fields = ai_data.get("extracted_fields") or {}
+
                 entities["ai_classification"] = {
                     "document_type": doc_type,
                     "platform_subtype": classification.get("subtype"),
                     "confidence": confidence,
                     "status": ai_data.get("status"),
                     "client": ai_data.get("client"),
-                    "extracted_fields": ai_data.get("extracted_fields"),
+                    "extracted_fields": extracted_fields,
                     "sensitivity": ai_data.get("sensitivity"),
                     "suggested_job_ref": ai_data.get("suggested_job_ref"),
                     "review_reasons": ai_data.get("review_reasons", []),
                 }
+
+                # Merge extracted fields directly into top-level entities for seamless UI presentation
+                if extracted_fields:
+                    if extracted_fields.get("abn"):
+                        entities["abn"] = extracted_fields["abn"]
+                    if extracted_fields.get("reference"):
+                        entities["invoice_number"] = extracted_fields["reference"]
+                    if extracted_fields.get("supplier_name"):
+                        entities["supplier_name"] = extracted_fields["supplier_name"]
+                        if "companies" not in entities or not entities["companies"]:
+                            entities["companies"] = [extracted_fields["supplier_name"]]
+                    if extracted_fields.get("amount_total") is not None:
+                        amt_str = f"${extracted_fields['amount_total']:,.2f}"
+                        entities["total_amount"] = amt_str
+                        if "amounts" not in entities or not entities["amounts"]:
+                            entities["amounts"] = [amt_str]
+                        elif amt_str not in entities["amounts"]:
+                            entities["amounts"].insert(0, amt_str)
+                    if extracted_fields.get("gst") is not None:
+                        entities["gst"] = f"${extracted_fields['gst']:,.2f}"
+                    if extracted_fields.get("subtotal") is not None:
+                        entities["subtotal"] = f"${extracted_fields['subtotal']:,.2f}"
+                    if extracted_fields.get("due_date"):
+                        entities["due_date"] = extracted_fields["due_date"]
+                        email.triage.due_date = extracted_fields["due_date"]
+                    if extracted_fields.get("document_date"):
+                        entities["document_date"] = extracted_fields["document_date"]
+                    if extracted_fields.get("bank_details"):
+                        entities["bank_details"] = extracted_fields["bank_details"]
+
+                if email.attachments:
+                    entities["attachment_source"] = email.attachments[0].filename
+
                 email.triage.entities = entities
 
                 # Enrich attachment payload if present

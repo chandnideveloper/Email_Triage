@@ -81,6 +81,11 @@ class EmailFetcher:
                         log.debug("Skipping already ingested message graph_id=%s", graph_id)
                         continue
 
+                    internet_id = raw_msg.get("internetMessageId")
+                    if internet_id and self.repository.get_by_internet_message_id(str(internet_id)):
+                        log.debug("Skipping already ingested message internet_id=%s", internet_id)
+                        continue
+
                     record = self.parser.parse_graph_message(raw_msg)
                     self.repository.save_email(record)
                     fetched_records.append(record)

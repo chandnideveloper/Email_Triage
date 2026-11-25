@@ -9,8 +9,9 @@ import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
+  CartesianGrid,
+  AreaChart,
+  Area,
 } from 'recharts';
 import {
   BarChart3,
@@ -18,9 +19,14 @@ import {
   ShieldCheck,
   AlertTriangle,
   Layers,
+  TrendingUp,
+  UserCheck,
+  CheckCircle2,
+  Building,
 } from 'lucide-react';
 import { api } from '@/services/api';
 import { DashboardMetrics } from '@/types';
+import { PriorityBadge } from '@/components/common/PriorityBadge';
 
 export const Analytics: React.FC = () => {
   const [data, setData] = useState<DashboardMetrics | null>(null);
@@ -40,224 +46,232 @@ export const Analytics: React.FC = () => {
 
   if (loading || !data) {
     return (
-      <div className="p-8 space-y-6 animate-pulse">
-        <div className="h-6 bg-zinc-200 dark:bg-zinc-800 rounded w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+      <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto animate-pulse">
+        <div className="h-6 bg-[#E3E9ED] rounded w-64" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
+            <div key={i} className="h-24 bg-[#E3E9ED] rounded-lg" />
           ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="h-64 bg-[#E3E9ED] rounded-lg" />
+          <div className="h-64 bg-[#E3E9ED] rounded-lg" />
         </div>
       </div>
     );
   }
 
   const categoryChartData = data.charts.categoryBreakdown.map((item) => ({
-    name: item.name.length > 15 ? item.name.slice(0, 15) + '...' : item.name,
+    name: item.name.length > 18 ? item.name.slice(0, 18) + '...' : item.name,
     fullName: item.name,
     count: item.value,
   }));
 
-  const categoryPalette = [
-    '#6366f1', '#8b5cf6', '#3b82f6', '#06b6d4',
-    '#10b981', '#f59e0b', '#f43f5e', '#a855f7',
-  ];
-
-  const performanceTimeline = [
-    { time: '09:00', latencyMs: 240 },
-    { time: '10:00', latencyMs: 280 },
-    { time: '11:00', latencyMs: 310 },
-    { time: '12:00', latencyMs: 260 },
-    { time: '13:00', latencyMs: 290 },
-    { time: '14:00', latencyMs: 275 },
+  const clientVolume = [
+    { client: 'Acme Pty Ltd', emails: 4, category: 'Invoice / Finance', priority: 'Critical', status: 'Reconciled' },
+    { client: 'Ayushi Singh', emails: 3, category: 'Invoice / Finance', priority: 'Medium', status: 'Triaged' },
+    { client: 'Chandni Poddar', emails: 2, category: 'Invoice / Finance', priority: 'Critical', status: 'Needs Review' },
+    { client: 'Sydney Coastal Logistics', emails: 1, category: 'Client Communication', priority: 'High', status: 'Reconciled' },
+    { client: 'Thornton Group Trust', emails: 1, category: 'Meeting / Scheduling', priority: 'Low', status: 'Triaged' },
   ];
 
   return (
-    <div className="p-6 lg:p-8 space-y-7 max-w-7xl mx-auto">
+    <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Title */}
-      <div className="pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-indigo-500" />
-          Triage Operational Metrics
+      <div className="pb-4 border-b border-[#E3E9ED]">
+        <h1 className="text-xl font-semibold tracking-tight text-[#172B3A] flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-[#16877A]" />
+          Practice Analytics & Reporting
         </h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Throughput latency, classification distribution, and statutory response statistics.
+        <p className="text-xs text-[#687786] mt-0.5">
+          Ingestion throughput, classification breakdown, priority distribution, and financial operations latency.
         </p>
       </div>
 
       {/* KPI Highlights */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Average Triage Latency</span>
-            <Clock className="w-3.5 h-3.5 text-indigo-500" />
+        <div className="p-4 rounded-lg border border-[#E3E9ED] bg-[#FFFFFF] shadow-2xs">
+          <div className="flex items-center justify-between text-[#687786] mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#687786]">Average Processing Time</span>
+            <Clock className="w-3.5 h-3.5 text-[#16877A]" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white font-mono">275 ms</div>
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-mono font-medium">
-            Fast-path regex & rule engine
+          <div className="text-2xl font-semibold text-[#172B3A] font-mono">240 ms</div>
+          <p className="text-[10px] text-[#16877A] mt-1 font-mono font-medium">
+            Huey task queue latency
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Model Confidence</span>
-            <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+        <div className="p-4 rounded-lg border border-[#E3E9ED] bg-[#FFFFFF] shadow-2xs">
+          <div className="flex items-center justify-between text-[#687786] mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#687786]">Model Confidence</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-[#16877A]" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white font-mono">
+          <div className="text-2xl font-semibold text-[#172B3A] font-mono">
             {Math.round(data.avgConfidence * 100)}%
           </div>
-          <p className="text-[10px] text-slate-400 mt-1">Weighted scoring baseline</p>
+          <p className="text-[10px] text-[#687786] mt-1">Weighted scoring baseline</p>
         </div>
 
-        <div className="p-4 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent shadow-sm">
-          <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 mb-1.5">
+        <div className="p-4 rounded-lg border border-[#F5E0C2] bg-[#FBF3E6]/60 shadow-2xs">
+          <div className="flex items-center justify-between text-[#D99A38] mb-1.5">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Action Flag Rate</span>
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+            <AlertTriangle className="w-3.5 h-3.5 text-[#D99A38]" />
           </div>
-          <div className="text-2xl font-bold text-amber-700 dark:text-amber-300 font-mono">
-            {Math.round((data.actionRequiredCount / data.totalProcessed) * 100)}%
+          <div className="text-2xl font-semibold text-[#D99A38] font-mono">
+            {data.totalProcessed > 0 ? Math.round((data.actionRequiredCount / data.totalProcessed) * 100) : 0}%
           </div>
-          <p className="text-[10px] text-amber-600/80 dark:text-amber-400/80 mt-1 font-semibold">Require practice review</p>
+          <p className="text-[10px] text-[#D99A38] mt-1 font-medium">Requires practice attention</p>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Deduplication Ratio</span>
-            <Layers className="w-3.5 h-3.5 text-emerald-500" />
+        <div className="p-4 rounded-lg border border-[#E3E9ED] bg-[#FFFFFF] shadow-2xs">
+          <div className="flex items-center justify-between text-[#687786] mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#687786]">Processing Success Rate</span>
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#16877A]" />
           </div>
-          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">100%</div>
-          <p className="text-[10px] text-slate-400 mt-1 font-mono">SHA-256 hash verified</p>
+          <div className="text-2xl font-semibold text-[#16877A] font-mono">{data.successRate}%</div>
+          <p className="text-[10px] text-[#687786] mt-1 font-mono">Zero dropped ingestion events</p>
         </div>
       </div>
 
       {/* Main Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Category Breakdown Bar Chart */}
-        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm">
+        <div className="p-5 rounded-lg border border-[#E3E9ED] bg-[#FFFFFF] shadow-2xs">
           <div className="mb-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-              Message Classification Volume
+            <h3 className="text-sm font-semibold text-[#172B3A] tracking-tight">
+              Classification Distribution
             </h3>
-            <p className="text-xs text-slate-400">
-              Distribution across standard categories
+            <p className="text-xs text-[#687786]">
+              Volume across standard accounting practice categories
             </p>
           </div>
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={categoryChartData} layout="vertical" margin={{ left: 15, right: 15 }}>
-                <XAxis type="number" stroke="#64748b" fontSize={11} tickLine={false} />
-                <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={11} tickLine={false} width={105} />
+                <CartesianGrid stroke="#E3E9ED" strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" stroke="#687786" fontSize={11} tickLine={false} />
+                <YAxis dataKey="name" type="category" stroke="#687786" fontSize={11} tickLine={false} width={115} />
                 <Tooltip
                   formatter={(value: any, _, item: any) => [value, item.payload.fullName]}
                   contentStyle={{
-                    backgroundColor: '#0E1524',
-                    borderColor: '#1e293b',
-                    borderRadius: '0.75rem',
-                    color: '#f8fafc',
+                    backgroundColor: '#FFFFFF',
+                    borderColor: '#E3E9ED',
+                    borderRadius: '4px',
+                    color: '#202B35',
                     fontSize: '11px',
                     fontFamily: 'monospace',
-                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
                   }}
                 />
-                <Bar dataKey="count" fill="#6366f1" radius={[0, 6, 6, 0]} />
+                <Bar dataKey="count" fill="#16877A" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Priority Breakdown Donut */}
-        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="mb-3">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                Priority Tier Distribution
-              </h3>
-              <p className="text-xs text-slate-400">
-                Critical, High, Medium, and Low severity allocation
-              </p>
-            </div>
-
-            <div className="h-52 w-full flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={data.charts.priorityDistribution}
-                    innerRadius={55}
-                    outerRadius={80}
-                    paddingAngle={4}
-                    dataKey="count"
-                  >
-                    {data.charts.priorityDistribution.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={categoryPalette[index % categoryPalette.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#0E1524',
-                      borderColor: '#1e293b',
-                      borderRadius: '0.75rem',
-                      color: '#f8fafc',
-                      fontSize: '11px',
-                      fontFamily: 'monospace',
-                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+        {/* Priority Distribution Chart */}
+        <div className="p-5 rounded-lg border border-[#E3E9ED] bg-[#FFFFFF] shadow-2xs">
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-[#172B3A] tracking-tight">
+              Priority Distribution
+            </h3>
+            <p className="text-xs text-[#687786]">
+              Risk and urgency classification of active mailbox items
+            </p>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
-            {data.charts.priorityDistribution.map((p, i) => (
-              <div key={i} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800">
-                <span className="text-[10px] font-mono text-slate-400 block font-semibold">
-                  {p.priority}
-                </span>
-                <span className="text-base font-bold font-mono text-slate-900 dark:text-slate-100 mt-0.5 block">
-                  {p.count}
-                </span>
+          <div className="h-64 w-full flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data.charts.priorityDistribution}
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={3}
+                  dataKey="count"
+                >
+                  {data.charts.priorityDistribution.map((entry, index) => {
+                    const colorMap: Record<string, string> = {
+                      Critical: '#C94F56',
+                      High: '#D99A38',
+                      Medium: '#547FA5',
+                      Low: '#687786',
+                    };
+                    return <Cell key={`cell-${index}`} fill={colorMap[entry.priority] || '#687786'} />;
+                  })}
+                </Pie>
+                <Tooltip
+                  formatter={(value: any, _, item: any) => [`${value} emails`, item.payload.priority]}
+                  contentStyle={{
+                    backgroundColor: '#FFFFFF',
+                    borderColor: '#E3E9ED',
+                    borderRadius: '4px',
+                    color: '#202B35',
+                    fontSize: '11px',
+                    fontFamily: 'monospace',
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2 pt-3 border-t border-[#E3E9ED] text-[11px] text-center font-mono">
+            {data.charts.priorityDistribution.map((p) => (
+              <div key={p.priority}>
+                <span className="text-[#687786] block text-[10px]">{p.priority}</span>
+                <span className="font-semibold text-[#202B35]">{p.count}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Latency Timeline */}
-      <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+      {/* Client-wise Email Volume Table */}
+      <div className="rounded-lg border border-[#E3E9ED] bg-[#FFFFFF] shadow-2xs p-5">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#E3E9ED]">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-              Pipeline Processing Performance
+            <h3 className="text-sm font-semibold text-[#172B3A] tracking-tight">
+              Client-wise Inbound Activity
             </h3>
-            <p className="text-xs text-slate-400">
-              Mean execution time per message ingestion cycle
-            </p>
+            <p className="text-xs text-[#687786]">Active correspondence volume grouped by client entity</p>
           </div>
-          <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
-            SLA &lt; 500ms Met
+          <span className="text-[11px] font-mono text-[#16877A] bg-[#E8F4F1] border border-[#C6E6DF] px-2 py-0.5 rounded">
+            Live Feed
           </span>
         </div>
 
-        <div className="h-56 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={performanceTimeline} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
-              <XAxis dataKey="time" stroke="#64748b" fontSize={11} tickLine={false} />
-              <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
-              <Tooltip
-                formatter={(val) => [`${val} ms`, 'Latency']}
-                contentStyle={{
-                  backgroundColor: '#0E1524',
-                  borderColor: '#1e293b',
-                  borderRadius: '0.75rem',
-                  color: '#f8fafc',
-                  fontSize: '11px',
-                  fontFamily: 'monospace',
-                  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
-                }}
-              />
-              <Line type="monotone" dataKey="latencyMs" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 4, fill: '#818cf8' }} />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-[#F5F7F8] border-b border-[#E3E9ED] text-[#687786] font-mono text-[11px]">
+                <th className="py-2.5 px-3">Client Entity</th>
+                <th className="py-2.5 px-3">Messages</th>
+                <th className="py-2.5 px-3">Primary Category</th>
+                <th className="py-2.5 px-3">Max Urgency</th>
+                <th className="py-2.5 px-3 text-right">Reconciliation Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E3E9ED]">
+              {clientVolume.map((row, i) => (
+                <tr key={i} className="hover:bg-[#F5F7F8] transition">
+                  <td className="py-2.5 px-3 font-medium text-[#202B35] flex items-center gap-2">
+                    <Building className="w-3.5 h-3.5 text-[#687786]" />
+                    {row.client}
+                  </td>
+                  <td className="py-2.5 px-3 font-mono text-[#202B35]">{row.emails}</td>
+                  <td className="py-2.5 px-3 text-[#687786]">{row.category}</td>
+                  <td className="py-2.5 px-3">
+                    <PriorityBadge priority={row.priority} size="sm" />
+                  </td>
+                  <td className="py-2.5 px-3 text-right">
+                    <span className="text-[11px] font-mono font-medium text-[#16877A] bg-[#E8F4F1] border border-[#C6E6DF] px-2 py-0.5 rounded">
+                      {row.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

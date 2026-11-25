@@ -1,41 +1,71 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary-navy: #172B3A;
+  --color-navy-dark: #11212D;
+  --color-navy-hover: #1E374A;
+  --color-main-bg: #F5F7F8;
+  --color-card-bg: #FFFFFF;
+  --color-primary-teal: #16877A;
+  --color-teal-hover: #127267;
+  --color-primary-text: #202B35;
+  --color-secondary-text: #687786;
+  --color-app-border: #E3E9ED;
+
+  /* Status Tokens */
+  --color-status-critical: #C94F56;
+  --color-status-warning: #D99A38;
+  --color-status-success: #16877A;
+  --color-status-info: #547FA5;
+
+  /* Status Background Tokens */
+  --color-status-critical-bg: #FBECEE;
+  --color-status-warning-bg: #FBF3E6;
+  --color-status-success-bg: #E8F4F1;
+  --color-status-info-bg: #EDF3F8;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', Menlo, Monaco, Consolas, monospace;
+}
+
 @layer base {
   :root {
-    --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'Geist Mono', monospace;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  }
+
+  * {
+    border-color: #E3E9ED;
   }
 
   body {
     font-family: var(--font-sans);
-    letter-spacing: -0.018em;
+    background-color: #F5F7F8;
+    color: #202B35;
+    letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    letter-spacing: -0.03em;
+    letter-spacing: -0.022em;
+    color: #172B3A;
+    font-weight: 600;
   }
 }
 
-/* Custom subtle, high-end scrollbar */
+/* Subtle, clean enterprise scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(161, 161, 170, 0.28);
+  background: #D4DCE2;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(161, 161, 170, 0.5);
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(63, 63, 70, 0.45);
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(82, 82, 91, 0.7);
+  background: #B0BEC7;
 }

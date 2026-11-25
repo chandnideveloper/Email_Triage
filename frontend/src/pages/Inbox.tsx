@@ -2,26 +2,28 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Search,
-  CheckSquare,
-  Square,
-  MailCheck,
-  Mail,
-  CheckCircle2,
-  Paperclip,
-  ArrowUpDown,
+  Filter,
+  CheckCircle,
   Inbox as InboxIcon,
   Flame,
   AlertOctagon,
   Clock,
+  ArrowUpDown,
+  Mail,
+  MailCheck,
   Tag,
+  Paperclip,
+  CheckSquare,
+  Square,
   X,
+  ChevronDown,
 } from 'lucide-react';
+import { EmailRecord, EmailCategory, Priority } from '@/types';
 import { api } from '@/services/api';
-import { EmailCategory, EmailRecord } from '@/types';
+import { EmailDetailView } from '@/components/inbox/EmailDetailView';
 import { PriorityBadge } from '@/components/common/PriorityBadge';
 import { CategoryBadge } from '@/components/common/CategoryBadge';
 import { EmptyState } from '@/components/common/EmptyState';
-import { EmailDetailView } from '@/components/inbox/EmailDetailView';
 import { formatRelativeTime } from '@/utils/formatters';
 import { useToast } from '@/components/ui/Toast';
 import { cn } from '@/utils/cn';
@@ -42,10 +44,14 @@ export const Inbox: React.FC = () => {
   const toast = useToast();
 
   const [emails, setEmails] = useState<EmailRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
+  const [selectedEmailId, setSelectedEmailId] = useState<string | null>(
+    searchParams.get('id') || null
+  );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showBulkCategoryMenu, setShowBulkCategoryMenu] = useState(false);
+
+  // Counters for left sub-navigation
   const [counts, setCounts] = useState({
     total: 0,
     critical: 0,
@@ -56,7 +62,9 @@ export const Inbox: React.FC = () => {
 
   // Filters
   const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [selectedCategory, setSelectedCategory] = useState<string>(searchParams.get('category') || 'all');
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    searchParams.get('category') || 'all'
+  );
   const [selectedPriority, setSelectedPriority] = useState<string>(searchParams.get('priority') || 'all');
   const [readFilter, setReadFilter] = useState<'all' | 'unread' | 'read'>(
     (searchParams.get('read') as any) || 'all'
@@ -64,20 +72,23 @@ export const Inbox: React.FC = () => {
   const [actionOnly, setActionOnly] = useState<boolean>(searchParams.get('action') === 'true');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'priority'>('newest');
 
-  const loadEmails = async () => {
+  const loadEmails = async (isBackground = false) => {
     try {
-      setLoading(true);
+      if (!isBackground) {
+        setLoading(true);
+      }
       // Fetch unfiltered emails to compute live badges and counts
       const allRes = await api.getEmails({});
       const raw = allRes.items;
       const cats: Record<string, number> = {};
       raw.forEach((e) => {
-        cats[e.triage.category] = (cats[e.triage.category] || 0) + 1;
+        const c = e.triage?.category || 'Other';
+        cats[c] = (cats[c] || 0) + 1;
       });
       setCounts({
         total: raw.length,
-        critical: raw.filter((e) => e.triage.priority === 'Critical').length,
-        action: raw.filter((e) => e.triage.action_required).length,
+        critical: raw.filter((e) => e.triage?.priority === 'Critical').length,
+        action: raw.filter((e) => e.triage?.action_required).length,
         unread: raw.filter((e) => !e.is_read).length,
         categories: cats,
       });
@@ -94,43 +105,62 @@ export const Inbox: React.FC = () => {
       setEmails(res.items);
 
       if (res.items.length > 0) {
-        const idFromUrl = searchParams.get('id');
-        const match = res.items.find((e) => e.internal_id === idFromUrl);
-        setSelectedEmailId(match ? match.internal_id : res.items[0].internal_id);
+        setSelectedEmailId((prevId) => {
+          if (prevId && res.items.some((e) => e.internal_id === prevId)) {
+            return prevId;
+          }
+          const idFromUrl = searchParams.get('id');
+          const match = idFromUrl ? res.items.find((e) => e.internal_id === idFromUrl) : null;
+          return match ? match.internal_id : res.items[0].internal_id;
+        });
       } else {
         setSelectedEmailId(null);
       }
     } catch {
-      toast.error('Failed to load emails');
+      if (!isBackground) {
+        toast.error('Failed to load emails');
+      }
     } finally {
-      setLoading(false);
+      if (!isBackground) {
+        setLoading(false);
+      }
     }
   };
 
-  // Periodic background sync from Microsoft Graph
+  // Periodic background sync from Microsoft Graph (every 10s for fast email intake)
   useEffect(() => {
     const runSync = async () => {
       try {
         await api.triggerSync();
-        loadEmails();
+        loadEmails(true);
       } catch (err) {
         console.debug('Background sync skipped/failed:', err);
       }
     };
 
-    // Run on initial page load
-    runSync();
-
-    // Auto-sync from M365 every 20 seconds
-    const syncInterval = setInterval(runSync, 20000);
+    const syncInterval = setInterval(runSync, 10000);
     return () => clearInterval(syncInterval);
   }, []);
 
+  // Fast-poll inbox when any email is being actively analyzed by AI
   useEffect(() => {
-    loadEmails();
-    const handleUpdate = () => loadEmails();
+    const hasAnalyzing = emails.some(
+      (e) => e.processing_status === 'PENDING' || e.processing_status === 'INGESTED' || e.processing_status === 'RETRYING'
+    );
+    if (!hasAnalyzing) return;
+
+    const fastPoll = setInterval(() => {
+      loadEmails(true);
+    }, 2000);
+
+    return () => clearInterval(fastPoll);
+  }, [emails]);
+
+  useEffect(() => {
+    loadEmails(emails.length > 0);
+    const handleUpdate = () => loadEmails(true);
     window.addEventListener('triage_updated', handleUpdate);
-    const interval = setInterval(loadEmails, 8000);
+    const interval = setInterval(() => loadEmails(true), 12000);
     return () => {
       window.removeEventListener('triage_updated', handleUpdate);
       clearInterval(interval);
@@ -219,124 +249,143 @@ export const Inbox: React.FC = () => {
 
   const handleBulkMarkRead = async (isRead: boolean) => {
     if (selectedIds.length === 0) return;
-    await api.markRead(selectedIds, isRead);
-    toast.success(`Marked ${selectedIds.length} email(s) as ${isRead ? 'read' : 'unread'}`);
+    const targetIds = [...selectedIds];
+    setEmails((prev) =>
+      prev.map((e) => (targetIds.includes(e.internal_id) ? { ...e, is_read: isRead } : e))
+    );
     setSelectedIds([]);
-    loadEmails();
+    await api.markRead(targetIds, isRead);
+    toast.success(`Marked ${targetIds.length} email(s) as ${isRead ? 'read' : 'unread'}`);
+    loadEmails(true);
   };
 
   const handleBulkMarkCompleted = async () => {
     if (selectedIds.length === 0) return;
-    await api.markCompleted(selectedIds);
-    toast.success(`Resolved ${selectedIds.length} email(s)`);
+    const targetIds = [...selectedIds];
+    setEmails((prev) =>
+      prev.map((e) =>
+        targetIds.includes(e.internal_id)
+          ? {
+              ...e,
+              is_read: true,
+              processing_status: 'COMPLETED' as any,
+              triage: { ...e.triage, action_required: false, response_required: false, follow_up_required: false },
+            }
+          : e
+      )
+    );
     setSelectedIds([]);
-    loadEmails();
+    await api.markCompleted(targetIds);
+    toast.success(`Resolved ${targetIds.length} email(s)`);
+    loadEmails(true);
   };
 
   const handleBulkCategorize = async (cat: EmailCategory) => {
     if (selectedIds.length === 0) return;
-    await api.updateCategory(selectedIds, cat);
-    toast.success(`Updated category to "${cat}" for ${selectedIds.length} email(s)`);
+    const targetIds = [...selectedIds];
+    setEmails((prev) =>
+      prev.map((e) =>
+        targetIds.includes(e.internal_id)
+          ? { ...e, triage: { ...e.triage, category: cat } }
+          : e
+      )
+    );
     setShowBulkCategoryMenu(false);
     setSelectedIds([]);
-    loadEmails();
-  };
-
-  const handleToggleSingleRead = async (id: string, isRead: boolean) => {
-    await api.markRead([id], isRead);
-    toast.success(`Email marked as ${isRead ? 'read' : 'unread'}`);
-    loadEmails();
-  };
-
-  const handleSingleMarkCompleted = async (id: string) => {
-    await api.markCompleted([id]);
-    toast.success('Email resolved');
-    loadEmails();
+    await api.updateCategory(targetIds, cat);
+    toast.success(`Updated category to "${cat}" for ${targetIds.length} email(s)`);
+    loadEmails(true);
   };
 
   return (
-    <div className="h-full flex overflow-hidden">
-      {/* COLUMN 1: Left Filter Sidebar */}
-      <div className="hidden xl:flex flex-col w-56 border-r border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-[#0B0F19]/90 p-3.5 shrink-0 overflow-y-auto backdrop-blur-sm">
-        <div className="flex items-center justify-between pb-2.5 border-b border-slate-150 dark:border-slate-800/80 mb-2.5">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">
+    <div className="flex h-full w-full overflow-hidden bg-[#FFFFFF]">
+      {/* COLUMN 1: Left Inbox Filters (220px) */}
+      <div className="hidden lg:flex flex-col w-[220px] shrink-0 border-r border-[#E3E9ED] bg-[#F5F7F8] p-3 overflow-y-auto select-none">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <span className="text-[11px] font-semibold tracking-wider text-[#687786] uppercase font-mono">
             Inbox Views
           </span>
-          {(selectedCategory !== 'all' || selectedPriority !== 'all' || actionOnly || readFilter !== 'all' || search) && (
+          {(selectedCategory !== 'all' || selectedPriority !== 'all' || actionOnly || readFilter !== 'all') && (
             <button
               onClick={handleReset}
-              className="text-[10px] font-mono text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold transition cursor-pointer"
+              className="text-[10px] text-[#16877A] font-medium hover:underline cursor-pointer"
             >
               Reset
             </button>
           )}
         </div>
 
-        {/* Quick Views */}
-        <div className="space-y-1 mb-5">
+        {/* Primary Views */}
+        <div className="space-y-0.5 mb-4">
           <button
             onClick={handleSelectAllMail}
             className={cn(
-              'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition cursor-pointer',
+              'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
               selectedCategory === 'all' && selectedPriority === 'all' && !actionOnly && readFilter === 'all'
-                ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold border-l-2 border-indigo-500 shadow-2xs'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                ? 'bg-[#E3E9ED] text-[#172B3A] font-semibold'
+                : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
             )}
           >
             <span className="flex items-center gap-2">
-              <InboxIcon className="w-3.5 h-3.5 text-indigo-500" /> All Mail
+              <InboxIcon className="w-3.5 h-3.5 text-[#16877A]" /> All Mail
             </span>
-            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-slate-150 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold">{counts.total}</span>
+            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#FFFFFF] text-[#687786] font-medium border border-[#E3E9ED]">
+              {counts.total}
+            </span>
           </button>
 
           <button
             onClick={() => handleTogglePriority('Critical')}
             className={cn(
-              'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition cursor-pointer',
+              'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
               selectedPriority === 'Critical'
-                ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold border-l-2 border-rose-500 shadow-2xs'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                ? 'bg-[#FBECEE] text-[#C94F56] font-semibold border border-[#F7D3D6]'
+                : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
             )}
           >
             <span className="flex items-center gap-2">
-              <Flame className="w-3.5 h-3.5 text-rose-500" /> Critical / P1
+              <Flame className="w-3.5 h-3.5 text-[#C94F56]" /> Critical / P1
             </span>
             {counts.critical > 0 && (
-              <span className="text-[10px] font-mono text-white bg-rose-500 px-1.5 py-0.2 rounded-full font-bold">{counts.critical}</span>
+              <span className="text-[10px] font-mono text-[#C94F56] bg-[#FFFFFF] border border-[#F7D3D6] px-1.5 py-0.2 rounded font-semibold">
+                {counts.critical}
+              </span>
             )}
           </button>
 
           <button
             onClick={handleToggleActionOnly}
             className={cn(
-              'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition cursor-pointer',
+              'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
               actionOnly
-                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border-l-2 border-amber-500 shadow-2xs'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                ? 'bg-[#FBF3E6] text-[#D99A38] font-semibold border border-[#F5E0C2]'
+                : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
             )}
           >
             <span className="flex items-center gap-2">
-              <AlertOctagon className="w-3.5 h-3.5 text-amber-500" /> Action Required
+              <AlertOctagon className="w-3.5 h-3.5 text-[#D99A38]" /> Action Required
             </span>
             {counts.action > 0 && (
-              <span className="text-[10px] font-mono text-white bg-amber-500 px-1.5 py-0.2 rounded-full font-bold">{counts.action}</span>
+              <span className="text-[10px] font-mono text-[#D99A38] bg-[#FFFFFF] border border-[#F5E0C2] px-1.5 py-0.2 rounded font-semibold">
+                {counts.action}
+              </span>
             )}
           </button>
         </div>
 
-        {/* Read / Unread Status Controller */}
-        <div className="mb-5">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block mb-1.5 px-1">
+        {/* Read State Selector */}
+        <div className="mb-4">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#687786] font-semibold block mb-1.5 px-1">
             Read State
           </span>
-          <div className="flex bg-slate-100 dark:bg-slate-900/90 p-1 rounded-xl text-xs font-mono border border-slate-200 dark:border-slate-800">
+          <div className="flex bg-[#E3E9ED] p-0.5 rounded text-xs font-mono">
             <button
               onClick={() => handleReadFilterChange('all')}
               className={cn(
-                'flex-1 py-1 rounded-lg text-center text-[11px] font-semibold transition cursor-pointer',
+                'flex-1 py-1 rounded text-center text-[11px] font-medium transition cursor-pointer',
                 readFilter === 'all'
-                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                  ? 'bg-[#FFFFFF] text-[#172B3A] shadow-2xs font-semibold'
+                  : 'text-[#687786] hover:text-[#202B35]'
               )}
             >
               All
@@ -344,10 +393,10 @@ export const Inbox: React.FC = () => {
             <button
               onClick={() => handleReadFilterChange('unread')}
               className={cn(
-                'flex-1 py-1 rounded-lg text-center text-[11px] font-semibold transition cursor-pointer',
+                'flex-1 py-1 rounded text-center text-[11px] font-medium transition cursor-pointer',
                 readFilter === 'unread'
-                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                  ? 'bg-[#FFFFFF] text-[#172B3A] shadow-2xs font-semibold'
+                  : 'text-[#687786] hover:text-[#202B35]'
               )}
             >
               Unread
@@ -355,10 +404,10 @@ export const Inbox: React.FC = () => {
             <button
               onClick={() => handleReadFilterChange('read')}
               className={cn(
-                'flex-1 py-1 rounded-lg text-center text-[11px] font-semibold transition cursor-pointer',
+                'flex-1 py-1 rounded text-center text-[11px] font-medium transition cursor-pointer',
                 readFilter === 'read'
-                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                  ? 'bg-[#FFFFFF] text-[#172B3A] shadow-2xs font-semibold'
+                  : 'text-[#687786] hover:text-[#202B35]'
               )}
             >
               Read
@@ -366,9 +415,9 @@ export const Inbox: React.FC = () => {
           </div>
         </div>
 
-        {/* Categories */}
+        {/* Categories List */}
         <div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block mb-1.5 px-1">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#687786] font-semibold block mb-1.5 px-1">
             Categories
           </span>
           <div className="space-y-0.5">
@@ -379,15 +428,15 @@ export const Inbox: React.FC = () => {
                   key={cat}
                   onClick={() => handleCategorySelect(cat)}
                   className={cn(
-                    'w-full text-left px-2.5 py-1.5 rounded-lg text-xs truncate transition flex items-center justify-between cursor-pointer',
+                    'w-full text-left px-2 py-1 rounded text-xs truncate transition flex items-center justify-between cursor-pointer',
                     selectedCategory === cat
-                      ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                      ? 'bg-[#E3E9ED] text-[#172B3A] font-semibold'
+                      : 'text-[#687786] hover:bg-[#E3E9ED]/50 hover:text-[#202B35]'
                   )}
                 >
                   <span className="truncate">{cat}</span>
                   {count > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-slate-150 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold ml-1.5">
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#FFFFFF] text-[#687786] border border-[#E3E9ED] font-medium ml-1">
                       {count}
                     </span>
                   )}
@@ -398,30 +447,30 @@ export const Inbox: React.FC = () => {
         </div>
       </div>
 
-      {/* COLUMN 2: Center Email List */}
+      {/* COLUMN 2: Middle Email List (350px) */}
       <div
         className={cn(
-          'flex flex-col flex-1 min-w-0 border-r border-slate-200/80 dark:border-slate-800/80 bg-slate-50/40 dark:bg-[#0B0F19]/60 backdrop-blur-sm',
-          selectedEmail && 'hidden md:flex md:w-96 md:max-w-md lg:w-[410px] lg:max-w-[410px] shrink-0'
+          'flex flex-col border-r border-[#E3E9ED] bg-[#FFFFFF]',
+          selectedEmail ? 'hidden md:flex md:w-[350px] shrink-0' : 'flex-1 md:w-[350px] md:flex-initial shrink-0'
         )}
       >
-        {/* Inbox Search & Controls Header */}
-        <div className="p-3.5 border-b border-slate-200/80 dark:border-slate-800/80 space-y-2.5 bg-white/80 dark:bg-[#0E1524]/80 backdrop-blur-md sticky top-0 z-10">
+        {/* Email List Header */}
+        <div className="p-3 border-b border-[#E3E9ED] bg-[#F5F7F8] space-y-2 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Inbox</h2>
-              <span className="text-[11px] font-mono px-2 py-0.5 font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 rounded-full">
+              <h2 className="text-sm font-semibold text-[#172B3A]">Inbox</h2>
+              <span className="text-[11px] font-mono px-1.5 py-0.2 font-medium bg-[#FFFFFF] border border-[#E3E9ED] text-[#16877A] rounded">
                 {emails.length}
               </span>
             </div>
 
             {/* Sort Dropdown */}
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/70 px-2 py-1 rounded-lg">
-              <ArrowUpDown className="w-3 h-3 text-indigo-500" />
+            <div className="flex items-center gap-1.5 text-xs text-[#687786] bg-[#FFFFFF] border border-[#E3E9ED] px-2 py-1 rounded">
+              <ArrowUpDown className="w-3 h-3 text-[#16877A]" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-transparent font-semibold outline-none cursor-pointer text-slate-700 dark:text-slate-300 text-xs"
+                className="bg-transparent font-medium outline-none cursor-pointer text-[#202B35] text-xs"
               >
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
@@ -430,108 +479,114 @@ export const Inbox: React.FC = () => {
             </div>
           </div>
 
-          {/* Search box inside inbox */}
+          {/* Quick Filter Search */}
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#687786]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Filter list..."
-              className="w-full pl-8 pr-4 py-1.5 text-xs bg-slate-100/70 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 shadow-2xs"
+              className="w-full pl-8 pr-4 py-1 text-xs bg-[#FFFFFF] border border-[#E3E9ED] rounded outline-none focus:border-[#16877A] text-[#202B35] placeholder:text-[#687786]"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#687786] hover:text-[#202B35]"
               >
                 <X className="w-3 h-3" />
               </button>
             )}
           </div>
+        </div>
 
-          {/* Bulk Bar (Modern gradient banner) */}
-          {selectedIds.length > 0 && (
-            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs shadow-md">
-              <div className="flex items-center gap-2">
-                <button onClick={handleSelectAll} className="hover:opacity-80 cursor-pointer">
-                  <CheckSquare className="w-3.5 h-3.5" />
-                </button>
-                <span className="font-mono font-bold text-[11px]">
+        {/* Bulk Action Toolbar */}
+        {emails.length > 0 && (
+          <div className="px-3 py-1.5 border-b border-[#E3E9ED] bg-[#F5F7F8] flex items-center justify-between text-xs text-[#687786]">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSelectAll}
+                className="text-[#687786] hover:text-[#202B35] flex items-center gap-1.5 cursor-pointer"
+              >
+                {selectedIds.length === emails.length && emails.length > 0 ? (
+                  <CheckSquare className="w-3.5 h-3.5 text-[#16877A]" />
+                ) : (
+                  <Square className="w-3.5 h-3.5" />
+                )}
+                <span className="text-[11px]">Select all</span>
+              </button>
+              {selectedIds.length > 0 && (
+                <span className="text-[10px] font-mono font-medium text-[#16877A] bg-[#E8F4F1] border border-[#C6E6DF] px-1.5 py-0.2 rounded">
                   {selectedIds.length} selected
                 </span>
-              </div>
+              )}
+            </div>
 
-              <div className="flex items-center gap-1.5">
+            {selectedIds.length > 0 && (
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleBulkMarkRead(true)}
-                  className="p-1 hover:bg-white/20 rounded-md transition cursor-pointer"
-                  title="Mark Read"
+                  className="p-1 hover:bg-[#E3E9ED] rounded text-[#202B35]"
+                  title="Mark read"
                 >
                   <MailCheck className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={handleBulkMarkCompleted}
-                  className="p-1 hover:bg-white/20 rounded-md transition cursor-pointer"
-                  title="Mark Resolved"
+                  className="p-1 hover:bg-[#E3E9ED] rounded text-[#16877A]"
+                  title="Mark resolved"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <CheckCircle className="w-3.5 h-3.5" />
                 </button>
-
-                {/* Bulk Categorize Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setShowBulkCategoryMenu(!showBulkCategoryMenu)}
-                    className="p-1 hover:bg-white/20 rounded-md transition cursor-pointer"
-                    title="Change Category"
+                    className="p-1 hover:bg-[#E3E9ED] rounded text-[#202B35]"
+                    title="Change category"
                   >
                     <Tag className="w-3.5 h-3.5" />
                   </button>
-
                   {showBulkCategoryMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl p-1 z-50 space-y-0.5">
-                      <span className="px-2.5 py-1 text-[9px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
-                        Set Category
-                      </span>
-                      {INBOX_CATEGORIES.map((c: EmailCategory) => (
+                    <div className="absolute right-0 mt-1 w-44 bg-[#FFFFFF] border border-[#E3E9ED] rounded shadow-md z-30 py-1 text-xs">
+                      {INBOX_CATEGORIES.map((cat) => (
                         <button
-                          key={c}
-                          onClick={() => handleBulkCategorize(c)}
-                          className="w-full text-left px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg truncate font-medium cursor-pointer"
+                          key={cat}
+                          onClick={() => handleBulkCategorize(cat)}
+                          className="w-full text-left px-3 py-1.5 hover:bg-[#F5F7F8] text-[#202B35] truncate"
                         >
-                          {c}
+                          {cat}
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
-        {/* Email Item Rows List */}
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
-          {loading ? (
+        {/* Email Cards List */}
+        <div className="flex-1 overflow-y-auto divide-y divide-[#E3E9ED]">
+          {loading && emails.length === 0 ? (
             <div className="p-4 space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-20 bg-slate-150 dark:bg-slate-800/50 rounded-xl animate-pulse" />
+                <div key={i} className="h-18 bg-[#F5F7F8] rounded animate-pulse" />
               ))}
             </div>
           ) : emails.length === 0 ? (
-            <div className="p-8">
+            <div className="p-8 text-center">
               <EmptyState
                 icon={InboxIcon}
-                title="No matching emails"
-                description="Try clearing your search query or reset the category filters."
-                actionText="Reset Filters"
-                onAction={() => {
-                  setSelectedCategory('all');
-                  setSelectedPriority('all');
-                  setReadFilter('all');
-                  setActionOnly(false);
-                  setSearch('');
-                }}
+                title="No emails match your filter"
+                description="Try clearing search or filters to see all messages."
+                action={
+                  <button
+                    onClick={handleReset}
+                    className="px-3 py-1.5 text-xs font-medium text-[#16877A] border border-[#16877A]/40 rounded hover:bg-[#E8F4F1] transition"
+                  >
+                    Clear Filters
+                  </button>
+                }
               />
             </div>
           ) : (
@@ -542,87 +597,75 @@ export const Inbox: React.FC = () => {
               return (
                 <div
                   key={email.internal_id}
-                  onClick={() => setSelectedEmailId(email.internal_id)}
+                  onClick={() => {
+                    setSelectedEmailId(email.internal_id);
+                    const next = new URLSearchParams(searchParams);
+                    next.set('id', email.internal_id);
+                    setSearchParams(next);
+                  }}
                   className={cn(
-                    'group relative p-3.5 cursor-pointer transition-all flex items-start gap-3 border-l-3',
+                    'p-3 cursor-pointer transition select-none relative group',
                     isSelected
-                      ? 'bg-indigo-50/80 dark:bg-indigo-950/35 border-l-indigo-600 dark:border-l-indigo-500 shadow-2xs'
-                      : 'border-l-transparent hover:bg-white dark:hover:bg-slate-800/40',
-                    !email.is_read && 'bg-white dark:bg-[#0E1524]/60'
+                      ? 'bg-[#EDF3F8]/60 border-l-[3px] border-[#16877A]'
+                      : 'hover:bg-[#F5F7F8] border-l-[3px] border-transparent',
+                    !email.is_read && 'bg-[#FFFFFF]'
                   )}
                 >
-                  {/* Select Checkbox */}
-                  <button
-                    onClick={(e) => handleToggleSelect(email.internal_id, e)}
-                    className="mt-0.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
-                  >
-                    {isChecked ? (
-                      <CheckSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                    ) : (
-                      <Square className="w-4 h-4 text-slate-300 dark:text-slate-600" />
-                    )}
-                  </button>
-
-                  {/* Email Snippet Details */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-1.5 truncate">
-                        {!email.is_read && (
-                          <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 shadow-[0_0_6px_rgba(99,102,241,0.8)]" />
+                  <div className="flex items-start justify-between gap-1 mb-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <button
+                        onClick={(e) => handleToggleSelect(email.internal_id, e)}
+                        className="text-[#687786] hover:text-[#202B35] shrink-0"
+                      >
+                        {isChecked ? (
+                          <CheckSquare className="w-3.5 h-3.5 text-[#16877A]" />
+                        ) : (
+                          <Square className="w-3.5 h-3.5 text-[#B0BEC7]" />
                         )}
-                        <span
-                          className={cn(
-                            'text-xs truncate',
-                            !email.is_read
-                              ? 'font-bold text-slate-900 dark:text-white'
-                              : 'text-slate-600 dark:text-slate-400 font-medium'
-                          )}
-                        >
-                          {email.sender_name}
-                        </span>
-                      </div>
+                      </button>
 
-                      <span className="text-[10px] font-mono text-slate-400 shrink-0 font-medium">
-                        {formatRelativeTime(email.received_at)}
+                      {/* Unread Indicator */}
+                      {!email.is_read && (
+                        <span className="w-2 h-2 rounded-full bg-[#16877A] shrink-0" />
+                      )}
+
+                      <span
+                        className={cn(
+                          'text-xs truncate',
+                          !email.is_read ? 'font-semibold text-[#172B3A]' : 'font-medium text-[#202B35]'
+                        )}
+                      >
+                        {email.sender_name}
                       </span>
                     </div>
 
-                    <p
-                      className={cn(
-                        'text-xs truncate mb-1',
-                        !email.is_read
-                          ? 'font-bold text-slate-900 dark:text-slate-100'
-                          : 'text-slate-700 dark:text-slate-300'
-                      )}
-                    >
-                      {email.subject}
-                    </p>
+                    <span className="text-[10px] font-mono text-[#687786] shrink-0">
+                      {formatRelativeTime(email.received_at)}
+                    </span>
+                  </div>
 
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mb-2 font-normal leading-relaxed">
-                      {email.triage.summary}
-                    </p>
+                  <p
+                    className={cn(
+                      'text-xs truncate mb-1 pl-5',
+                      !email.is_read ? 'font-semibold text-[#172B3A]' : 'text-[#202B35]'
+                    )}
+                  >
+                    {email.subject}
+                  </p>
 
-                    {/* Badges Bar */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <PriorityBadge priority={email.triage.priority} size="sm" />
-                      <CategoryBadge category={email.triage.category} size="sm" />
+                  <p className="text-[11px] text-[#687786] line-clamp-1 mb-2 pl-5">
+                    {email.triage?.summary || email.body_plain}
+                  </p>
 
-                      {email.has_attachments && (
-                        <span
-                          className="inline-flex items-center gap-0.5 text-[10px] font-mono text-slate-400 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md"
-                          title="Has Attachments"
-                        >
-                          <Paperclip className="w-2.5 h-2.5 text-indigo-500" />
-                          {email.attachments.length}
-                        </span>
-                      )}
-
-                      {email.triage.due_date && (
-                        <span className="text-[10px] font-mono text-rose-600 dark:text-rose-400 font-semibold px-1.5 py-0.5 bg-rose-500/10 rounded-md">
-                          Due: {email.triage.due_date}
-                        </span>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-1.5 pl-5">
+                    <PriorityBadge priority={email.triage?.priority || 'Low'} size="sm" />
+                    <CategoryBadge category={email.triage?.category || 'Other'} size="sm" />
+                    {email.has_attachments && (
+                      <span className="text-[10px] text-[#687786] flex items-center gap-0.5 ml-auto font-mono">
+                        <Paperclip className="w-3 h-3 text-[#687786]" />
+                        {email.attachments.length}
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -631,21 +674,43 @@ export const Inbox: React.FC = () => {
         </div>
       </div>
 
-      {/* COLUMN 3: Right Preview / Email Detail */}
-      <div className="flex-1 min-w-0 bg-white dark:bg-[#0E1524] h-full overflow-hidden transition-colors">
+      {/* COLUMN 3: Right Email Detail Workspace */}
+      <div className="flex-1 flex flex-col min-w-0 bg-[#FFFFFF] overflow-hidden">
         {selectedEmail ? (
           <EmailDetailView
             email={selectedEmail}
             onClose={() => setSelectedEmailId(null)}
-            onToggleRead={handleToggleSingleRead}
-            onMarkCompleted={handleSingleMarkCompleted}
+            onToggleRead={async (id, isRead) => {
+              setEmails((prev) =>
+                prev.map((e) => (e.internal_id === id ? { ...e, is_read: isRead } : e))
+              );
+              await api.markRead([id], isRead);
+              loadEmails(true);
+            }}
+            onMarkCompleted={async (id) => {
+              setEmails((prev) =>
+                prev.map((e) =>
+                  e.internal_id === id
+                    ? {
+                        ...e,
+                        is_read: true,
+                        processing_status: 'COMPLETED' as any,
+                        triage: { ...e.triage, action_required: false, response_required: false, follow_up_required: false },
+                      }
+                    : e
+                )
+              );
+              await api.markCompleted([id]);
+              toast.success('Marked Resolved');
+              loadEmails(true);
+            }}
           />
         ) : (
-          <div className="h-full flex items-center justify-center p-8">
+          <div className="h-full flex items-center justify-center p-8 text-center bg-[#F5F7F8]">
             <EmptyState
-              icon={Mail}
-              title="Select an email to view details"
-              description="Click any conversation from the list to inspect full content, extracted entities, and recommended actions."
+              icon={InboxIcon}
+              title="No email selected"
+              description="Select an email from the inbox list to review its AI classification, extracted financial data, and compliance details."
             />
           </div>
         )}

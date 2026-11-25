@@ -29,7 +29,7 @@ An AI-powered email intelligence dashboard and triage application built for mode
   - Email Volume & Ingestion Rate over time (`AreaChart`).
   - Classification distribution across 10 categories (`PieChart`).
 - **Recent Inflow**: Real-time incoming email stream.
-- **Sync Engine Health**: Live delta token tracking and Celery/Redis status.
+- **Sync Engine Health**: Live delta token tracking and Huey (SQLite) status.
 
 ### Page 2: Smart Inbox (`/inbox`)
 - **Three-Column Productivity Layout**:

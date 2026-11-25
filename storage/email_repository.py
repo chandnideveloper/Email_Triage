@@ -27,6 +27,7 @@ class EmailRepository:
     _SHARED_LOCK = threading.Lock()
     _SHARED_EMAILS: dict[str, EmailRecord] = {}
     _SHARED_GRAPH_ID_INDEX: dict[str, str] = {}
+    _SHARED_INTERNET_ID_INDEX: dict[str, str] = {}
     _SHARED_SYNC_STATES: dict[str, SyncStateRecord] = {}
     _SHARED_SUBSCRIPTIONS: dict[str, WebhookSubscriptionRecord] = {}
 
@@ -44,18 +45,36 @@ class EmailRepository:
                 data = json.loads(self.storage_file.read_text(encoding="utf-8"))
                 self._SHARED_EMAILS.clear()
                 self._SHARED_GRAPH_ID_INDEX.clear()
+                self._SHARED_INTERNET_ID_INDEX.clear()
                 self._SHARED_SYNC_STATES.clear()
                 self._SHARED_SUBSCRIPTIONS.clear()
+                has_duplicates = False
                 for email_data in data.get("emails", []):
                     rec = EmailRecord.from_dict(email_data)
+                    # Check for duplicates on disk by graph_message_id or internet_message_id
+                    existing_id = None
+                    if rec.graph_message_id and rec.graph_message_id in self._SHARED_GRAPH_ID_INDEX:
+                        existing_id = self._SHARED_GRAPH_ID_INDEX[rec.graph_message_id]
+                    elif rec.internet_message_id and rec.internet_message_id in self._SHARED_INTERNET_ID_INDEX:
+                        existing_id = self._SHARED_INTERNET_ID_INDEX[rec.internet_message_id]
+
+                    if existing_id:
+                        has_duplicates = True
+                        log.info("Pruned duplicate email '%s' (id=%s) matching existing id=%s", rec.subject, rec.internal_id, existing_id)
+                        continue
+
                     self._SHARED_EMAILS[rec.internal_id] = rec
                     if rec.graph_message_id:
                         self._SHARED_GRAPH_ID_INDEX[rec.graph_message_id] = rec.internal_id
+                    if rec.internet_message_id:
+                        self._SHARED_INTERNET_ID_INDEX[rec.internet_message_id] = rec.internal_id
                 for s_data in data.get("sync_states", []):
                     self._SHARED_SYNC_STATES[s_data["mailbox"]] = SyncStateRecord(**s_data)
                 for sub_data in data.get("subscriptions", []):
                     self._SHARED_SUBSCRIPTIONS[sub_data["subscription_id"]] = WebhookSubscriptionRecord(**sub_data)
                 log.info("Loaded repository from disk: %s emails", len(self._SHARED_EMAILS))
+                if has_duplicates:
+                    self._flush_to_disk()
             except Exception as exc:
                 log.warning("Failed to load repository from disk (%s), starting fresh", type(exc).__name__)
 
@@ -78,9 +97,22 @@ class EmailRepository:
     # --- Email Operations ---
     def save_email(self, email: EmailRecord) -> EmailRecord:
         with self._SHARED_LOCK:
+            # Check for existing duplicate by graph_message_id or internet_message_id
+            existing_internal_id = None
+            if email.graph_message_id and email.graph_message_id in self._SHARED_GRAPH_ID_INDEX:
+                existing_internal_id = self._SHARED_GRAPH_ID_INDEX[email.graph_message_id]
+            elif email.internet_message_id and email.internet_message_id in self._SHARED_INTERNET_ID_INDEX:
+                existing_internal_id = self._SHARED_INTERNET_ID_INDEX[email.internet_message_id]
+
+            if existing_internal_id and existing_internal_id != email.internal_id:
+                # Reuse existing internal_id so we update in-place instead of creating a duplicate
+                email.internal_id = existing_internal_id
+
             self._SHARED_EMAILS[email.internal_id] = email
             if email.graph_message_id:
                 self._SHARED_GRAPH_ID_INDEX[email.graph_message_id] = email.internal_id
+            if email.internet_message_id:
+                self._SHARED_INTERNET_ID_INDEX[email.internet_message_id] = email.internal_id
         self._flush_to_disk()
         return email
 
@@ -91,6 +123,13 @@ class EmailRepository:
     def get_by_graph_id(self, graph_message_id: str) -> EmailRecord | None:
         with self._SHARED_LOCK:
             internal_id = self._SHARED_GRAPH_ID_INDEX.get(graph_message_id)
+            if internal_id:
+                return self._SHARED_EMAILS.get(internal_id)
+            return None
+
+    def get_by_internet_message_id(self, internet_message_id: str) -> EmailRecord | None:
+        with self._SHARED_LOCK:
+            internal_id = self._SHARED_INTERNET_ID_INDEX.get(internet_message_id)
             if internal_id:
                 return self._SHARED_EMAILS.get(internal_id)
             return None

@@ -52,6 +52,7 @@ export const App: React.FC = () => {
                 <Route path="inbox/:id" element={<Inbox />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="attachments" element={<Attachments />} />
+                <Route path="documents" element={<Attachments />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>

@@ -1,4 +1,4 @@
-"""Celery background tasks for asynchronous email ingestion, triage, and synchronization."""
+"""Background tasks for asynchronous email ingestion, triage, and synchronization using Huey (SQLite)."""
 from __future__ import annotations
 
 import functools
@@ -18,55 +18,54 @@ from email_triage.utils.logger import get_logger
 
 log = get_logger(__name__)
 
-# Attempt importing Celery, otherwise provide transparent fallback decorator
+# Import Huey application
 try:
-    from celery import Celery
-
-    _CELERY_AVAILABLE = True
+    from huey_app import huey
+    _HUEY_AVAILABLE = True
 except ImportError:
-    Celery = None
-    _CELERY_AVAILABLE = False
+    try:
+        from email_triage.huey_app import huey
+        _HUEY_AVAILABLE = True
+    except ImportError:
+        huey = None
+        _HUEY_AVAILABLE = False
 
-
-config = get_config()
-
-if _CELERY_AVAILABLE:
-    celery_app = Celery(
-        "email_triage",
-        broker=config.celery_broker_url,
-        backend=config.celery_result_backend,
-    )
-    celery_app.conf.update(
-        task_serializer="json",
-        result_serializer="json",
-        accept_content=["json"],
-        task_always_eager=config.task_always_eager,
-    )
-else:
-    celery_app = None
+celery_app = huey  # Backward compatibility alias
 
 
 def task_decorator(*d_args, **d_kwargs):
-    """Decorator registering with Celery if available, or providing an eager runner fallback."""
+    """Decorator registering with Huey (SQLite backend) or providing an eager runner fallback."""
+    huey_kwargs = dict(d_kwargs)
+    if "bind" in huey_kwargs:
+        huey_kwargs.pop("bind")
+    if "default_retry_delay" in huey_kwargs:
+        huey_kwargs["retry_delay"] = huey_kwargs.pop("default_retry_delay")
+    if "max_retries" in huey_kwargs:
+        huey_kwargs["retries"] = huey_kwargs.pop("max_retries")
 
     def decorator(func: Callable[..., Any]):
-        if _CELERY_AVAILABLE and celery_app:
-            registered = celery_app.task(*d_args, **d_kwargs)(func)
-            return registered
+        huey_task = huey.task(*d_args, **huey_kwargs)(func) if (_HUEY_AVAILABLE and huey) else None
 
-        # Fallback wrapper mimicking Celery .delay() and .apply_async()
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
+            cfg = get_config()
+            if cfg.task_always_eager or not (_HUEY_AVAILABLE and huey):
+                return func(*args, **kwargs)
+            return huey_task(*args, **kwargs)
 
         def delay(*args, **kwargs):
-            return func(*args, **kwargs)
+            cfg = get_config()
+            if cfg.task_always_eager or not (_HUEY_AVAILABLE and huey):
+                return func(*args, **kwargs)
+            return huey_task(*args, **kwargs)
 
         def apply_async(args=None, kwargs=None, **_opt):
-            return func(*(args or ()), **(kwargs or {}))
+            return delay(*(args or ()), **(kwargs or {}))
 
         wrapper.delay = delay
         wrapper.apply_async = apply_async
+        wrapper.call_local = func
+        wrapper.huey_task = huey_task
         return wrapper
 
     if len(d_args) == 1 and callable(d_args[0]):
@@ -78,7 +77,7 @@ def task_decorator(*d_args, **d_kwargs):
 
 # --- Task Implementations ---
 
-@task_decorator(bind=True, max_retries=3, default_retry_delay=5)
+@task_decorator(retries=3, retry_delay=5)
 def task_sync_mailbox(self=None, mailbox: str | None = None) -> dict[str, Any]:
     """Asynchronous background task to incrementally sync mailbox changes."""
     log.info("Starting task_sync_mailbox for mailbox=%s", mailbox)
@@ -97,7 +96,7 @@ def task_sync_mailbox(self=None, mailbox: str | None = None) -> dict[str, Any]:
         raise
 
 
-@task_decorator(bind=True, max_retries=3, default_retry_delay=5)
+@task_decorator(retries=3, retry_delay=5)
 def task_process_single_email(self=None, mailbox: str | None = None, message_id: str = "") -> dict[str, Any]:
     """Fetches full message details, saves to repository, downloads attachments, and runs triage."""
     log.info("Processing single email message_id=%s", message_id)
@@ -133,7 +132,7 @@ def task_process_single_email(self=None, mailbox: str | None = None, message_id:
         raise
 
 
-@task_decorator(bind=True, max_retries=2, default_retry_delay=5)
+@task_decorator(retries=2, retry_delay=5)
 def task_download_attachments(self=None, mailbox: str | None = None, message_id: str = "", email_internal_id: str = "") -> list[str]:
     """Downloads and persists attachments for a given email record."""
     log.info("Downloading attachments for message_id=%s", message_id)
@@ -187,7 +186,7 @@ def task_download_attachments(self=None, mailbox: str | None = None, message_id:
         raise
 
 
-@task_decorator(bind=True, max_retries=2)
+@task_decorator(retries=2, retry_delay=5)
 def task_triage_email(self=None, internal_id: str = "") -> dict[str, Any]:
     """Runs or re-runs triage analysis on an existing email record."""
     log.info("Running triage for email internal_id=%s", internal_id)
@@ -208,7 +207,7 @@ def task_triage_email(self=None, internal_id: str = "") -> dict[str, Any]:
         raise
 
 
-@task_decorator
+@task_decorator(retries=2, retry_delay=60)
 def task_renew_subscriptions() -> dict[str, Any]:
     """Scans and renews webhook subscriptions nearing expiration."""
     log.info("Checking webhook subscriptions for renewal")
@@ -228,3 +227,13 @@ def task_renew_subscriptions() -> dict[str, Any]:
     except Exception as exc:
         log.error("task_renew_subscriptions error: %s", type(exc).__name__)
         return {"status": "FAILED", "error": type(exc).__name__}
+
+
+if _HUEY_AVAILABLE and huey:
+    from huey import crontab
+
+    @huey.periodic_task(crontab(minute="0", hour="*/6"))
+    def periodic_renew_subscriptions():
+        """Periodic job executing every 6 hours via Huey consumer."""
+        log.info("Huey periodic task: renewing subscriptions")
+        return task_renew_subscriptions()

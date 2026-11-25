@@ -19,7 +19,8 @@ export type ProcessingStatus =
   | 'TRIAGED'
   | 'ATTACHMENTS_PROCESSED'
   | 'FAILED'
-  | 'RETRYING';
+  | 'RETRYING'
+  | 'COMPLETED';
 
 export interface AttachmentMetadata {
   id: string;

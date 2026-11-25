@@ -71,11 +71,46 @@ class DocumentExtractor:
                 return self._extract_from_image(path)
             elif ext in (".txt", ".csv"):
                 return path.read_text(encoding="utf-8", errors="ignore")
+            elif ext in (".docx", ".doc"):
+                return self._extract_from_docx(path)
             else:
                 log.info("Unsupported extension for extraction: %s", ext)
                 return ""
         except Exception as exc:
             log.error("Failed to extract text from %s: %s", path.name, exc)
+            return ""
+
+    def _extract_from_docx(self, path: Path) -> str:
+        """Extracts text from DOCX (and binary DOC text strings) using standard library zipfile/xml."""
+        import zipfile
+        import xml.etree.ElementTree as ET
+
+        if zipfile.is_zipfile(path):
+            try:
+                with zipfile.ZipFile(path) as z:
+                    xml_content = z.read("word/document.xml")
+                    tree = ET.fromstring(xml_content)
+                    paragraphs: list[str] = []
+                    for p in tree.iter("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p"):
+                        texts = [
+                            node.text
+                            for node in p.iter("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t")
+                            if node.text
+                        ]
+                        if texts:
+                            paragraphs.append("".join(texts))
+                    return "\n".join(paragraphs)
+            except Exception as e:
+                log.warning("DOCX extraction error from %s: %s", path.name, e)
+
+        # Fallback for plain binary or older formats: scan printable ASCII/UTF-8 strings
+        try:
+            data = path.read_bytes()
+            import re
+            strings = re.findall(rb"[\x20-\x7E\t\r\n]{4,}", data)
+            return "\n".join(s.decode("latin1", errors="ignore") for s in strings)
+        except Exception as exc:
+            log.warning("Fallback doc extraction failed for %s: %s", path.name, exc)
             return ""
 
     def _extract_from_pdf(self, path: Path) -> str:

@@ -35,8 +35,8 @@ def trigger_sync(background_tasks: BackgroundTasks, mailbox: str | None = None) 
     if cfg.task_always_eager:
         result = task_sync_mailbox(mailbox=target)
         return {"status": "COMPLETED", "result": result}
-    # Asynchronous background execution
-    background_tasks.add_task(task_sync_mailbox, mailbox=target)
+    # Enqueue to Huey task queue (never run simultaneously in both background_tasks and worker)
+    task_sync_mailbox(mailbox=target)
     return {"status": "ENQUEUED", "mailbox": target}
 
 
@@ -64,12 +64,66 @@ def list_emails(
 def get_email_detail(email_id: str) -> dict[str, Any]:
     """Retrieves complete email details including body, triage scores, and extracted entities."""
     repo = EmailRepository()
-    email = repo.get_email(email_id)
-    if not email:
-        # Check by graph_message_id as fallback
-        email = repo.get_by_graph_id(email_id)
+    email = repo.get_email(email_id) or repo.get_by_graph_id(email_id)
     if not email:
         raise HTTPException(status_code=404, detail="Email not found")
+
+    # If email is actively being analyzed in background, return immediately
+    if email.processing_status in (ProcessingStatus.PENDING, ProcessingStatus.INGESTED):
+        return email.to_dict()
+
+    # Self-healing: if email has attachments flag but attachments list is empty, fetch live from Graph
+    if email.has_attachments and not email.attachments and email.graph_message_id:
+        try:
+            from email_triage.graph_client.attachment_service import AttachmentService
+            from email_triage.graph_client.client import GraphClient
+            from email_triage.storage.attachment_storage import AttachmentStorage, AttachmentValidationError
+            from email_triage.ingestion.document_extractor import DocumentExtractor
+            from email_triage.triage import TriageEngine
+
+            cfg = get_config()
+            client = GraphClient(config=cfg)
+            att_svc = AttachmentService(client)
+            att_storage = AttachmentStorage(config=cfg)
+            meta_list = att_svc.list_attachments(cfg.target_mailbox, email.graph_message_id)
+            downloaded = []
+            for item in meta_list:
+                aid = item.get("id")
+                if not aid:
+                    continue
+                fname, content = att_svc.download_attachment_bytes(cfg.target_mailbox, email.graph_message_id, aid)
+                if content:
+                    try:
+                        m = att_storage.store_attachment(
+                            email_internal_id=email.internal_id,
+                            graph_attachment_id=aid,
+                            filename=fname,
+                            content=content,
+                            content_type=item.get("contentType", "application/octet-stream"),
+                            is_inline=bool(item.get("isInline", False)),
+                        )
+                        downloaded.append(m)
+                    except AttachmentValidationError as ve:
+                        log.warning("Skipped attachment validation in get_email_detail: %s", ve)
+            if downloaded:
+                extractor = DocumentExtractor()
+                for m in downloaded:
+                    if m.storage_path and os.path.exists(m.storage_path):
+                        txt = extractor.extract_text_from_file(m.storage_path)
+                        if txt:
+                            if not m.ibex_compatible_payload:
+                                m.ibex_compatible_payload = {}
+                            m.ibex_compatible_payload["extracted_text"] = txt
+                email.attachments = downloaded
+                email.has_attachments = True
+                try:
+                    email = TriageEngine().triage_email(email)
+                except Exception as te:
+                    log.warning("Re-triage error in get_email_detail: %s", te)
+                repo.save_email(email)
+        except Exception as e:
+            log.warning("Lazy attachment fetch failed in get_email_detail: %s", e)
+
     return email.to_dict()
 
 
@@ -80,6 +134,16 @@ def get_email_attachments(email_id: str) -> dict[str, Any]:
     email = repo.get_email(email_id) or repo.get_by_graph_id(email_id)
     if not email:
         raise HTTPException(status_code=404, detail="Email not found")
+
+    if email.has_attachments and not email.attachments and email.graph_message_id:
+        # Re-fetch via get_email_detail self-healing
+        detail = get_email_detail(email_id)
+        return {
+            "email_id": detail.get("internal_id"),
+            "count": len(detail.get("attachments", [])),
+            "attachments": detail.get("attachments", []),
+        }
+
     return {
         "email_id": email.internal_id,
         "count": len(email.attachments),
@@ -246,6 +310,73 @@ def download_attachment(
     )
 
 
+@router.patch("/emails/{email_id}")
+def update_email(email_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """Updates fields on an EmailRecord (e.g. is_read, processing_status, category)."""
+    repo = EmailRepository()
+    email = repo.get_email(email_id) or repo.get_by_graph_id(email_id)
+    if not email:
+        raise HTTPException(status_code=404, detail="Email not found")
+
+    if "is_read" in payload:
+        email.is_read = bool(payload["is_read"])
+    if "processing_status" in payload:
+        try:
+            email.processing_status = ProcessingStatus(payload["processing_status"])
+        except (ValueError, TypeError):
+            pass
+    if "category" in payload and email.triage:
+        try:
+            email.triage.category = EmailCategory(payload["category"])
+        except (ValueError, TypeError):
+            pass
+    if "action_required" in payload and email.triage:
+        email.triage.action_required = bool(payload["action_required"])
+    if "response_required" in payload and email.triage:
+        email.triage.response_required = bool(payload["response_required"])
+    if "follow_up_required" in payload and email.triage:
+        email.triage.follow_up_required = bool(payload["follow_up_required"])
+
+    saved = repo.save_email(email)
+    return saved.to_dict()
+
+
+@router.post("/emails/batch")
+def batch_update_emails(payload: dict[str, Any]) -> dict[str, Any]:
+    """Batch updates emails (e.g. markRead, markCompleted, changeCategory)."""
+    repo = EmailRepository()
+    email_ids = payload.get("email_ids", [])
+    updates = payload.get("updates", {})
+    updated_records = []
+
+    for eid in email_ids:
+        email = repo.get_email(eid) or repo.get_by_graph_id(eid)
+        if not email:
+            continue
+        if "is_read" in updates:
+            email.is_read = bool(updates["is_read"])
+        if "processing_status" in updates:
+            try:
+                email.processing_status = ProcessingStatus(updates["processing_status"])
+            except (ValueError, TypeError):
+                pass
+        if "category" in updates and email.triage:
+            try:
+                email.triage.category = EmailCategory(updates["category"])
+            except (ValueError, TypeError):
+                pass
+        if "action_required" in updates and email.triage:
+            email.triage.action_required = bool(updates["action_required"])
+        if "response_required" in updates and email.triage:
+            email.triage.response_required = bool(updates["response_required"])
+        if "follow_up_required" in updates and email.triage:
+            email.triage.follow_up_required = bool(updates["follow_up_required"])
+        repo.save_email(email)
+        updated_records.append(email.internal_id)
+
+    return {"status": "SUCCESS", "updated_count": len(updated_records), "updated_ids": updated_records}
+
+
 @router.post("/emails/{email_id}/retry")
 def retry_email_processing(email_id: str) -> dict[str, Any]:
     """Retries processing or triage for a failed email."""
@@ -320,13 +451,10 @@ async def webhook_notification_receiver(
         log.warning("Webhook notification rejected: %s", err)
         raise HTTPException(status_code=403, detail=str(err)) from err
 
-    # Dispatch ingestion tasks for scheduled message IDs
+    # Dispatch ingestion tasks for scheduled message IDs via Huey
     cfg = get_config()
     for msg_id in dispatch_result.get("scheduled_message_ids", []):
-        if cfg.task_always_eager:
-            task_process_single_email(mailbox=cfg.target_mailbox, message_id=msg_id)
-        else:
-            background_tasks.add_task(task_process_single_email, mailbox=cfg.target_mailbox, message_id=msg_id)
+        task_process_single_email(mailbox=cfg.target_mailbox, message_id=msg_id)
 
     # Return HTTP 202 Accepted per Microsoft Graph requirements
     return Response(content="", status_code=202)

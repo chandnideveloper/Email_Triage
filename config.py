@@ -12,6 +12,7 @@ _BASE_DIR = Path(__file__).parent.resolve()
 try:
     from dotenv import load_dotenv
     load_dotenv(_BASE_DIR / ".env", override=True)
+    load_dotenv(_BASE_DIR.parent / ".env", override=False)
 except ImportError:
     pass
 
@@ -27,9 +28,12 @@ class TriageConfig:
     graph_api_base: str = field(default_factory=lambda: os.getenv("GRAPH_API_BASE", "https://graph.microsoft.com/v1.0").rstrip("/"))
     graph_scopes: str = field(default_factory=lambda: os.getenv("GRAPH_SCOPES", "https://graph.microsoft.com/.default").strip())
 
-    # Task Queue / Celery
-    celery_broker_url: str = field(default_factory=lambda: os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0").strip())
-    celery_result_backend: str = field(default_factory=lambda: os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/1").strip())
+    # Task Queue / Huey (SQLite) & Celery compatibility
+    huey_queue_path: Path = field(
+        default_factory=lambda: Path(os.getenv("HUEY_QUEUE_PATH", str(_BASE_DIR / "storage_data" / "triage_queue.db")))
+    )
+    celery_broker_url: str = field(default_factory=lambda: os.getenv("CELERY_BROKER_URL", "sqlite:///./storage_data/triage_queue.db").strip())
+    celery_result_backend: str = field(default_factory=lambda: os.getenv("CELERY_RESULT_BACKEND", "sqlite:///./storage_data/triage_queue.db").strip())
     task_always_eager: bool = field(
         default_factory=lambda: os.getenv("TASK_ALWAYS_EAGER", "True").lower() in ("1", "true", "yes", "on")
     )

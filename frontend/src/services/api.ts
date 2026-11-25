@@ -15,13 +15,29 @@ const API_BASE = '/api/triage';
 // Local storage key for persistent client updates
 const STORAGE_KEY = 'triageai_emails_v3';
 
+function deduplicateEmails(list: EmailRecord[]): EmailRecord[] {
+  const seen = new Set<string>();
+  const result: EmailRecord[] = [];
+  for (const item of list) {
+    const key = item.graph_message_id || item.internet_message_id || item.internal_id;
+    if (key && seen.has(key)) {
+      continue;
+    }
+    if (key) {
+      seen.add(key);
+    }
+    result.push(item);
+  }
+  return result;
+}
+
 function getStoredEmails(): EmailRecord[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        return parsed;
+        return deduplicateEmails(parsed);
       }
     }
   } catch (err) {
@@ -32,7 +48,7 @@ function getStoredEmails(): EmailRecord[] {
 
 function saveStoredEmails(emails: EmailRecord[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(emails));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(deduplicateEmails(emails)));
   } catch (err) {
     console.warn('Error saving to localStorage:', err);
   }
@@ -74,6 +90,7 @@ export const api = {
       rawEmails = getStoredEmails();
     }
 
+    rawEmails = deduplicateEmails(rawEmails);
     let emails = [...rawEmails];
 
     // Search query filter
@@ -174,6 +191,19 @@ export const api = {
     });
     saveStoredEmails(updated);
     if (typeof window !== 'undefined') window.dispatchEvent(new Event('triage_updated'));
+
+    try {
+      await fetch(`${API_BASE}/emails/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email_ids: emailIds,
+          updates: { is_read: isRead },
+        }),
+      });
+    } catch (err) {
+      console.warn('Backend markRead failed, persisted locally:', err);
+    }
   },
 
   // Mark completed / triaged
@@ -185,6 +215,7 @@ export const api = {
         return {
           ...e,
           is_read: true,
+          processing_status: 'COMPLETED' as any,
           triage: {
             ...e.triage,
             action_required: false,
@@ -198,6 +229,25 @@ export const api = {
     });
     saveStoredEmails(updated);
     if (typeof window !== 'undefined') window.dispatchEvent(new Event('triage_updated'));
+
+    try {
+      await fetch(`${API_BASE}/emails/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email_ids: emailIds,
+          updates: {
+            is_read: true,
+            processing_status: 'COMPLETED',
+            action_required: false,
+            response_required: false,
+            follow_up_required: false,
+          },
+        }),
+      });
+    } catch (err) {
+      console.warn('Backend markCompleted failed, persisted locally:', err);
+    }
   },
 
   // Update Category
@@ -216,6 +266,50 @@ export const api = {
     });
     saveStoredEmails(updated);
     if (typeof window !== 'undefined') window.dispatchEvent(new Event('triage_updated'));
+
+    try {
+      await fetch(`${API_BASE}/emails/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email_ids: emailIds,
+          updates: { category: newCategory },
+        }),
+      });
+    } catch (err) {
+      console.warn('Backend updateCategory failed, persisted locally:', err);
+    }
+  },
+
+  // Update Priority
+  async updatePriority(emailIds: string[], newPriority: Priority): Promise<void> {
+    const emails = getStoredEmails();
+    const idSet = new Set(emailIds);
+    const updated = emails.map((e) => {
+      if (idSet.has(e.internal_id)) {
+        return {
+          ...e,
+          triage: { ...e.triage, priority: newPriority },
+          updated_at: new Date().toISOString(),
+        };
+      }
+      return e;
+    });
+    saveStoredEmails(updated);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('triage_updated'));
+
+    try {
+      await fetch(`${API_BASE}/emails/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email_ids: emailIds,
+          updates: { priority: newPriority },
+        }),
+      });
+    } catch (err) {
+      console.warn('Backend updatePriority failed, persisted locally:', err);
+    }
   },
 
   // Trigger sync
@@ -297,51 +391,62 @@ export const api = {
 
     const totalProcessed = emails.length;
     const unreadCount = emails.filter((e) => !e.is_read).length;
-    const actionRequiredCount = emails.filter((e) => e.triage.action_required).length;
-    const urgentCount = emails.filter((e) => e.triage.priority === 'Critical' || e.triage.category === 'Urgent').length;
-    const responseRequiredCount = emails.filter((e) => e.triage.response_required).length;
+    const actionRequiredCount = emails.filter((e) => e.triage?.action_required).length;
+    const urgentCount = emails.filter((e) => e.triage?.priority === 'Critical' || e.triage?.category === 'Urgent').length;
+    const responseRequiredCount = emails.filter((e) => e.triage?.response_required || e.triage?.category === 'Client Communication').length;
 
-    // Upcoming deadlines from triage
+    // Upcoming deadlines from triage (deduplicated by company + dueDate)
+    const seenDeadlines = new Set<string>();
     const upcomingDeadlines: DashboardMetrics['dailyBrief']['upcomingDeadlines'] = [];
     const overdueFollowUps: DashboardMetrics['dailyBrief']['overdueFollowUps'] = [];
+    const seenActions = new Set<string>();
     const suggestedActions: DashboardMetrics['dailyBrief']['suggestedActions'] = [];
 
     emails.forEach((e) => {
-      if (e.triage.due_date && e.triage.action_required) {
-        upcomingDeadlines.push({
-          emailId: e.internal_id,
-          subject: e.subject,
-          company: e.triage.entities.companies?.[0],
-          dueDate: e.triage.due_date,
-          priority: e.triage.priority,
-        });
+      if (e.triage?.due_date && e.triage?.action_required) {
+        const company = e.triage.entities?.companies?.[0] || e.sender_name || 'Client';
+        const key = `${e.triage.due_date}::${company}`;
+        if (!seenDeadlines.has(key)) {
+          seenDeadlines.add(key);
+          upcomingDeadlines.push({
+            emailId: e.internal_id,
+            subject: e.subject,
+            company,
+            dueDate: e.triage.due_date,
+            priority: e.triage.priority,
+          });
+        }
       }
 
-      if (e.triage.follow_up_required && !e.is_read) {
+      if (e.triage?.follow_up_required && !e.is_read) {
         overdueFollowUps.push({
           emailId: e.internal_id,
           subject: e.subject,
           sender: e.sender_name,
-          daysOverdue: 2,
+          daysOverdue: 1,
         });
       }
 
-      if (e.triage.suggested_action && e.triage.action_required) {
-        suggestedActions.push({
-          id: `act-${e.internal_id}`,
-          emailId: e.internal_id,
-          title: e.subject,
-          actionText: e.triage.suggested_action,
-          priority: e.triage.priority,
-          category: e.triage.category,
-        });
+      if (e.triage?.suggested_action && e.triage?.action_required) {
+        const text = e.triage.suggested_action.trim();
+        if (!seenActions.has(text)) {
+          seenActions.add(text);
+          suggestedActions.push({
+            id: `act-${e.internal_id}`,
+            emailId: e.internal_id,
+            title: e.subject,
+            actionText: text,
+            priority: e.triage.priority,
+            category: e.triage.category,
+          });
+        }
       }
     });
 
-    // Category distribution
+    // Category distribution from real emails
     const catCounts: Record<string, number> = {};
     emails.forEach((e) => {
-      const cat = e.triage.category;
+      const cat = e.triage?.category || 'Other';
       catCounts[cat] = (catCounts[cat] || 0) + 1;
     });
 
@@ -364,10 +469,12 @@ export const api = {
       color: categoryColors[name] || '#6366F1',
     }));
 
-    // Priority distribution
+    // Priority distribution from real emails
     const prioCounts: Record<Priority, number> = { Critical: 0, High: 0, Medium: 0, Low: 0 };
     emails.forEach((e) => {
-      prioCounts[e.triage.priority] = (prioCounts[e.triage.priority] || 0) + 1;
+      if (e.triage?.priority && prioCounts[e.triage.priority] !== undefined) {
+        prioCounts[e.triage.priority] += 1;
+      }
     });
 
     const priorityDistribution = [
@@ -377,25 +484,58 @@ export const api = {
       { priority: 'Low', count: prioCounts.Low, color: '#94A3B8' },
     ];
 
-    // Volume chart mockup (past 7 days)
-    const volumeOverTime = [
-      { date: 'Nov 17', count: 42, actionRequired: 14 },
-      { date: 'Nov 18', count: 58, actionRequired: 22 },
-      { date: 'Nov 19', count: 65, actionRequired: 19 },
-      { date: 'Nov 20', count: 71, actionRequired: 29 },
-      { date: 'Nov 21', count: 83, actionRequired: 34 },
-      { date: 'Nov 22', count: 48, actionRequired: 15 },
-      { date: 'Nov 23', count: totalProcessed + 52, actionRequired: actionRequiredCount + 18 },
-    ];
+    // Volume chart generated from real email timestamps across past 7 days
+    const volumeOverTime: Array<{ date: string; count: number; actionRequired: number }> = [];
+    const now = new Date();
+    const dayMap = new Map<string, { count: number; actionRequired: number }>();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      dayMap.set(label, { count: 0, actionRequired: 0 });
+    }
+
+    emails.forEach((e) => {
+      const dateStr = e.received_at || e.created_at;
+      if (!dateStr) return;
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return;
+      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const entry = dayMap.get(label);
+      if (entry) {
+        entry.count += 1;
+        if (e.triage?.action_required) {
+          entry.actionRequired += 1;
+        }
+      }
+    });
+
+    dayMap.forEach((val, label) => {
+      volumeOverTime.push({
+        date: label,
+        count: val.count,
+        actionRequired: val.actionRequired,
+      });
+    });
+
+    // Real reliability & confidence metrics
+    const nonFailedCount = emails.filter((e) => e.processing_status !== 'FAILED').length;
+    const successRate = emails.length > 0 ? Number(((nonFailedCount / emails.length) * 100).toFixed(1)) : 100.0;
+    const validConfidences = emails
+      .map((e) => e.triage?.confidence)
+      .filter((c): c is number => typeof c === 'number' && !isNaN(c));
+    const avgConfidence = validConfidences.length > 0
+      ? Number((validConfidences.reduce((a, b) => a + b, 0) / validConfidences.length).toFixed(2))
+      : 0.94;
 
     return {
-      totalProcessed: totalProcessed + 1420,
+      totalProcessed,
       unreadCount,
       actionRequiredCount,
       urgentCount,
       responseRequiredCount,
-      successRate: 99.8,
-      avgConfidence: 0.94,
+      successRate,
+      avgConfidence,
       recentEmails: emails.slice(0, 5),
       dailyBrief: {
         importantCount: urgentCount + actionRequiredCount,
