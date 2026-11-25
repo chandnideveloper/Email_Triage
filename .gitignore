@@ -1,0 +1,8 @@
+.env
+*.pyc
+__pycache__/
+.pytest_cache/
+storage_data/attachments/*
+!storage_data/attachments/.gitkeep
+node_modules/
+dist/

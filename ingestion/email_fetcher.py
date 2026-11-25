@@ -58,28 +58,36 @@ class EmailFetcher:
 
         log.info("Fetching emails for mailbox=%s, max=%s, filter=%s", target_mailbox, max_emails, filter_query or "none")
 
-        initial_resp = self.email_service.list_messages(
-            mailbox=target_mailbox,
-            top=min(max_emails, 50),
-            filter_query=filter_query if filter_query else None,
-            folder_id=folder_id,
-        )
-
+        folders = [folder_id] if folder_id not in ("inbox", None) else ["inbox", "junkemail"]
         fetched_records: list[EmailRecord] = []
-        for page in self.email_service.traverse_pages(initial_resp, max_pages=10):
-            for raw_msg in page:
-                graph_id = raw_msg.get("id")
-                # Deduplication check
-                if graph_id and self.repository.get_by_graph_id(graph_id):
-                    log.debug("Skipping already ingested message graph_id=%s", graph_id)
-                    continue
 
-                record = self.parser.parse_graph_message(raw_msg)
-                self.repository.save_email(record)
-                fetched_records.append(record)
+        for f_id in folders:
+            remaining = max_emails - len(fetched_records)
+            if remaining <= 0:
+                break
 
-                if len(fetched_records) >= max_emails:
-                    return fetched_records
+            initial_resp = self.email_service.list_messages(
+                mailbox=target_mailbox,
+                top=min(remaining, 50),
+                filter_query=filter_query if filter_query else None,
+                folder_id=f_id,
+            )
+
+            for page in self.email_service.traverse_pages(initial_resp, max_pages=10):
+                for raw_msg in page:
+                    graph_id = raw_msg.get("id")
+                    # Deduplication check
+                    if graph_id and self.repository.get_by_graph_id(graph_id):
+                        log.debug("Skipping already ingested message graph_id=%s", graph_id)
+                        continue
+
+                    record = self.parser.parse_graph_message(raw_msg)
+                    self.repository.save_email(record)
+                    fetched_records.append(record)
+
+                    if len(fetched_records) >= max_emails:
+                        log.info("Finished fetching. Collected %s new emails.", len(fetched_records))
+                        return fetched_records
 
         log.info("Finished fetching. Collected %s new emails.", len(fetched_records))
         return fetched_records

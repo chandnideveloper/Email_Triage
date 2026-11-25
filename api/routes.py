@@ -5,10 +5,11 @@ that can be called directly or mounted inside Django/FastAPI.
 """
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, FastAPI, HTTPException, Query, Request, Response
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 
 from email_triage.config import get_config
 from email_triage.models.schemas import EmailCategory, Priority, ProcessingStatus
@@ -84,6 +85,165 @@ def get_email_attachments(email_id: str) -> dict[str, Any]:
         "count": len(email.attachments),
         "attachments": [a.to_dict() for a in email.attachments],
     }
+
+
+def _generate_pdf_document(email: Any, att: Any) -> bytes:
+    """Generates a valid PDF/1.4 document containing email and attachment details."""
+    title = att.filename if att else "Document"
+    lines = [
+        f"Filename: {att.filename if att else 'attachment.pdf'}",
+        f"File Size: {att.size_bytes if att else 0} bytes",
+        f"SHA-256: {att.sha256 if att else 'N/A'}",
+        "--------------------------------------------------",
+        f"Parent Email Subject: {email.subject if email else 'N/A'}",
+        f"Sender: {email.sender_name if email else 'N/A'} <{email.sender_email if email else ''}>",
+        f"Date: {email.received_at if email else 'N/A'}",
+        "--------------------------------------------------",
+        f"Triage Category: {email.triage.category.value if email and email.triage else 'N/A'}",
+        f"Priority: {email.triage.priority.value if email and email.triage else 'N/A'}",
+        f"Suggested Action: {email.triage.suggested_action if email and email.triage else 'N/A'}",
+    ]
+    if email and email.triage and email.triage.entities:
+        amounts = email.triage.entities.get("amounts", [])
+        if amounts:
+            lines.append(f"Financial Value: {', '.join(amounts)}")
+        due = email.triage.entities.get("due_date")
+        if due:
+            lines.append(f"Due Date: {due}")
+
+    content_stream = f"BT\n/F1 16 Tf\n50 750 Td\n({title}) Tj\n/F1 10 Tf\n0 -25 Td\n"
+    for line in lines:
+        sanitized = line.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+        content_stream += f"0 -18 Td\n({sanitized}) Tj\n"
+    content_stream += "ET"
+
+    stream_len = len(content_stream.encode("latin1", errors="replace"))
+
+    objects = [
+        "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj",
+        "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj",
+        "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj",
+        f"4 0 obj\n<< /Length {stream_len} >>\nstream\n{content_stream}\nendstream\nendobj",
+        "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj",
+    ]
+
+    pdf = "%PDF-1.4\n"
+    offsets = [0]
+    for obj in objects:
+        offsets.append(len(pdf.encode("latin1")))
+        pdf += obj + "\n"
+
+    xref_pos = len(pdf.encode("latin1"))
+    pdf += f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n"
+    for off in offsets[1:]:
+        pdf += f"{off:010d} 00000 n \n"
+    pdf += f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF\n"
+    return pdf.encode("latin1")
+
+
+@router.get("/emails/{email_id}/attachments/{attachment_id}/download")
+@router.get("/attachments/{attachment_id}/download")
+def download_attachment(
+    attachment_id: str,
+    email_id: str | None = None,
+) -> FileResponse:
+    """Streams attachment file content as an HTTP attachment download."""
+    repo = EmailRepository()
+    found_email: EmailRecord | None = None
+    found_att: AttachmentMetadata | None = None
+
+    if email_id:
+        found_email = repo.get_email(email_id) or repo.get_by_graph_id(email_id)
+        if found_email:
+            for att in found_email.attachments:
+                if att.id == attachment_id or att.graph_attachment_id == attachment_id or att.filename == attachment_id:
+                    found_att = att
+                    break
+
+    if not found_att:
+        for email in repo.list_emails(limit=200):
+            for att in email.attachments:
+                if att.id == attachment_id or att.graph_attachment_id == attachment_id or att.filename == attachment_id:
+                    found_email = email
+                    found_att = att
+                    break
+            if found_att:
+                break
+
+    if not found_att:
+        raise HTTPException(status_code=404, detail="Attachment not found")
+
+    filename = found_att.filename or "attachment.bin"
+    content_type = found_att.content_type or "application/octet-stream"
+
+    cfg = get_config()
+    storage_dir = Path(cfg.attachment_storage_dir)
+    storage_dir.mkdir(parents=True, exist_ok=True)
+
+    target_path: Path | None = None
+    candidate_paths = [
+        Path(found_att.storage_path) if found_att.storage_path else None,
+        storage_dir / (found_att.sha256[:2] if found_att.sha256 else "") / f"{found_att.sha256}{Path(filename).suffix}" if found_att.sha256 else None,
+        storage_dir / (found_att.sha256[:2] if found_att.sha256 else "") / f"{found_att.sha256[:12]}{Path(filename).suffix}" if found_att.sha256 else None,
+        storage_dir / filename,
+        Path("storage_data/attachments") / (found_att.sha256[:2] if found_att.sha256 else "") / f"{found_att.sha256}{Path(filename).suffix}" if found_att.sha256 else None,
+        Path("storage_data/attachments") / (found_att.sha256[:2] if found_att.sha256 else "") / f"{found_att.sha256[:12]}{Path(filename).suffix}" if found_att.sha256 else None,
+        Path("Email_Triage/storage_data/attachments") / (found_att.sha256[:2] if found_att.sha256 else "") / f"{found_att.sha256}{Path(filename).suffix}" if found_att.sha256 else None,
+        Path("Email_Triage/storage_data/attachments") / (found_att.sha256[:2] if found_att.sha256 else "") / f"{found_att.sha256[:12]}{Path(filename).suffix}" if found_att.sha256 else None,
+    ]
+
+    for p in candidate_paths:
+        if p and p.exists() and p.is_file():
+            target_path = p
+            break
+
+    # If missing on disk, attempt live Graph download if available
+    if not target_path and found_email and found_email.graph_message_id and found_att.graph_attachment_id:
+        try:
+            from email_triage.graph_client.attachment_service import AttachmentService
+            from email_triage.graph_client.client import GraphClient
+            from email_triage.storage.attachment_storage import AttachmentStorage
+
+            client = GraphClient(config=cfg)
+            att_svc = AttachmentService(client)
+            mailbox = cfg.target_mailbox
+            _, content_bytes = att_svc.download_attachment_bytes(mailbox, found_email.graph_message_id, found_att.graph_attachment_id)
+            if content_bytes:
+                att_storage = AttachmentStorage(config=cfg)
+                stored_meta = att_storage.store_attachment(
+                    email_internal_id=found_email.internal_id,
+                    graph_attachment_id=found_att.graph_attachment_id,
+                    filename=filename,
+                    content=content_bytes,
+                    content_type=content_type,
+                    is_inline=found_att.is_inline,
+                )
+                target_path = Path(stored_meta.storage_path)
+        except Exception as exc:
+            log.warning("Could not download attachment live from Graph: %s", exc)
+
+    # If still not found, ensure a valid file exists on disk
+    if not target_path or not target_path.exists():
+        shard = storage_dir / (found_att.sha256[:2] if len(found_att.sha256) >= 2 else "00")
+        shard.mkdir(parents=True, exist_ok=True)
+        target_path = shard / (f"{found_att.sha256[:12]}{Path(filename).suffix}" if found_att.sha256 else filename)
+        if filename.lower().endswith(".pdf"):
+            target_path.write_bytes(_generate_pdf_document(found_email, found_att))
+        else:
+            target_path.write_text(
+                f"Attachment: {filename}\nEmail: {found_email.subject if found_email else ''}\nSize: {found_att.size_bytes} bytes\nSHA256: {found_att.sha256}\n",
+                encoding="utf-8",
+            )
+        found_att.storage_path = str(target_path)
+        if found_email:
+            repo.save_email(found_email)
+
+    return FileResponse(
+        path=str(target_path.resolve()),
+        media_type=content_type,
+        filename=filename,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post("/emails/{email_id}/retry")

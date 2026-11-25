@@ -6,6 +6,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
+_BASE_DIR = Path(__file__).parent.resolve()
+
+# Load environment variables from .env if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv(_BASE_DIR / ".env", override=True)
+except ImportError:
+    pass
+
+
 @dataclass
 class TriageConfig:
     # Microsoft Graph / Entra ID
@@ -47,10 +57,18 @@ class TriageConfig:
         )
     )
     attachment_storage_dir: Path = field(
-        default_factory=lambda: Path(os.getenv("ATTACHMENT_STORAGE_DIR", "./storage_data/attachments"))
+        default_factory=lambda: (
+            (_BASE_DIR / Path(os.getenv("ATTACHMENT_STORAGE_DIR", "storage_data/attachments"))).resolve()
+            if not Path(os.getenv("ATTACHMENT_STORAGE_DIR", "storage_data/attachments")).is_absolute()
+            else Path(os.getenv("ATTACHMENT_STORAGE_DIR")).resolve()
+        )
     )
     repository_storage_path: Path = field(
-        default_factory=lambda: Path(os.getenv("REPOSITORY_STORAGE_PATH", "./storage_data/triage_store.json"))
+        default_factory=lambda: (
+            (_BASE_DIR / Path(os.getenv("REPOSITORY_STORAGE_PATH", "storage_data/triage_store.json"))).resolve()
+            if not Path(os.getenv("REPOSITORY_STORAGE_PATH", "storage_data/triage_store.json")).is_absolute()
+            else Path(os.getenv("REPOSITORY_STORAGE_PATH")).resolve()
+        )
     )
 
     # Operational & Security
@@ -59,6 +77,14 @@ class TriageConfig:
         default_factory=lambda: os.getenv("SANITIZE_LOGS", "True").lower() in ("1", "true", "yes", "on")
     )
     readiness_env: str = field(default_factory=lambda: os.getenv("READINESS_ENV", "development").lower())
+
+    # Ibex AI Classification Microservice
+    ai_classification_url: str = field(
+        default_factory=lambda: os.getenv("AI_CLASSIFICATION_URL", "http://127.0.0.1:8005/api/v1/classify/from-ingestion").strip()
+    )
+    use_ibex_ai: bool = field(
+        default_factory=lambda: os.getenv("USE_IBEX_AI", "True").lower() in ("1", "true", "yes", "on")
+    )
 
     @property
     def is_configured(self) -> bool:

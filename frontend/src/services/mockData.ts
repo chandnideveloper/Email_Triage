@@ -2,418 +2,496 @@ import { EmailRecord } from '@/types';
 
 export const INITIAL_MOCK_EMAILS: EmailRecord[] = [
   {
-    internal_id: 'em-101',
-    graph_message_id: 'AAMkAGI2AAAt101=',
-    conversation_id: 'conv-001',
-    sender_name: 'Sarah Jenkins',
-    sender_email: 'sarah.jenkins@sydneycoastal.com.au',
-    recipients: [{ name: 'Triage Team', email: 'triage@yourpractice.com.au' }],
-    cc: [{ name: 'Mark Evans', email: 'mark.evans@sydneycoastal.com.au' }],
-    subject: 'Urgent: Q1 BAS Lodgement Revision & ATO Penalty Warning',
-    body_plain: `Hi Team,\n\nWe urgently need to revise our September Quarter BAS lodgement for Sydney Coastal Logistics Pty Ltd. We noticed an omission of $48,250 in GST credits on our capital purchases from September 18.\n\nThe ATO statutory deadline is approaching fast (due date 28 November). Could you please review the attached revised ledger and lodge the amendment with the ATO immediately to prevent default assessment fees?\n\nThank you,\nSarah Jenkins\nFinance Director | Sydney Coastal Logistics Pty Ltd`,
-    body_html: `<p>Hi Team,</p><p>We urgently need to revise our September Quarter BAS lodgement for <strong>Sydney Coastal Logistics Pty Ltd</strong>. We noticed an omission of <strong>$48,250</strong> in GST credits on our capital purchases from September 18.</p><p>The ATO statutory deadline is approaching fast (<strong>due date 28 November</strong>). Could you please review the attached revised ledger and lodge the amendment with the ATO immediately to prevent default assessment fees?</p><p>Thank you,<br/><strong>Sarah Jenkins</strong><br/>Finance Director | Sydney Coastal Logistics Pty Ltd</p>`,
-    received_at: new Date(Date.now() - 1000 * 60 * 25).toISOString(), // 25 mins ago
-    is_read: false,
-    has_attachments: true,
-    attachments: [
+    "internal_id": "c2e35f0756cb4a6cbe5a428811006a43",
+    "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAfNUWAAA=",
+    "internet_message_id": "<CAFjUDf76XAYygmDZryrzKBye5U2L9aZ4W4y=90JzXj9HJ=VAEg@mail.gmail.com>",
+    "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQADtTtSxDUjFJiNUNgonx8Ak=",
+    "sender_name": "Chandni Poddar",
+    "sender_email": "poddarchandni5@gmail.com",
+    "recipients": [
       {
-        id: 'att-101-1',
-        filename: 'Sydney_Coastal_Q1_BAS_Ledger_v2.xlsx',
-        content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        size_bytes: 482910,
-        sha256: '8f9b2d837612c9a1e05a7c2937e0e7a1b32948c03975ba694e2e28cf69a23940',
-        is_inline: false,
-        storage_path: 'storage_data/attachments/8f/8f9b2d837612.xlsx',
-        downloaded_at: new Date(Date.now() - 1000 * 60 * 24).toISOString(),
-      },
-      {
-        id: 'att-101-2',
-        filename: 'ATO_Assessment_Notice_Nov2026.pdf',
-        content_type: 'application/pdf',
-        size_bytes: 1240320,
-        sha256: '3a49f99bc7461937194602f928e10034a719c92749001bfa8294719003847a9e',
-        is_inline: false,
-        storage_path: 'storage_data/attachments/3a/3a49f99bc746.pdf',
-        downloaded_at: new Date(Date.now() - 1000 * 60 * 24).toISOString(),
-      },
+        "name": "IBEX Mailbox Triage",
+        "email": "ibex.triage@aoscaustralia.com"
+      }
     ],
-    triage: {
-      category: 'Urgent',
-      priority: 'Critical',
-      confidence: 0.96,
-      action_required: true,
-      response_required: true,
-      follow_up_required: true,
-      suggested_action: 'Perform reconciliation on $48,250 capital purchase GST omission and lodge amended BAS before 28 November.',
-      due_date: '28 November',
-      summary: 'Sarah Jenkins flags an urgent omission of $48,250 in GST credits for Sydney Coastal Logistics Pty Ltd and requests immediate BAS lodgement revision before 28 November.',
-      key_points: [
-        'Urgent amendment needed for Q1 BAS lodgement',
-        '$48,250 omitted GST credits on capital purchases',
-        'ATO deadline: 28 November to avoid penalties',
-        'Attached ledger and notice require immediate reconciliation',
-      ],
-      entities: {
-        amounts: ['$48,250', '$48,250.00'],
-        companies: ['Sydney Coastal Logistics Pty Ltd'],
-        due_date: '28 November',
-        sender_name: 'Sarah Jenkins',
-        abn: ['51 824 910 204'],
-      },
-      triaged_at: new Date(Date.now() - 1000 * 60 * 24).toISOString(),
-    },
-    processing_status: 'ATTACHMENTS_PROCESSED',
-    retry_count: 0,
-    created_at: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 24).toISOString(),
-  },
-  {
-    internal_id: 'em-102',
-    graph_message_id: 'AAMkAGI2AAAt102=',
-    conversation_id: 'conv-002',
-    sender_name: 'David Thornton',
-    sender_email: 'accounts@thorntonbuilders.com.au',
-    recipients: [{ name: 'Triage Team', email: 'triage@yourpractice.com.au' }],
-    cc: [],
-    subject: 'Tax Invoice #INV-8831: Construction Milestone 3 — Thornton Group Trust',
-    body_plain: `Please find attached Tax Invoice #INV-8831 for Thornton Group Trust in relation to Milestone 3 commercial site prep. Total amount due is $115,500.00 (inclusive of $10,500 GST). Payment terms are 14 days, due on 05 December.\n\nPlease confirm receipt and process the remittance advice once approved.\n\nBest regards,\nDavid Thornton`,
-    body_html: `<p>Please find attached Tax Invoice #INV-8831 for <strong>Thornton Group Trust</strong> in relation to Milestone 3 commercial site prep.</p><p>Total amount due is <strong>$115,500.00</strong> (inclusive of <strong>$10,500 GST</strong>). Payment terms are 14 days, <strong>due on 05 December</strong>.</p><p>Please confirm receipt and process the remittance advice once approved.</p><p>Best regards,<br/>David Thornton</p>`,
-    received_at: new Date(Date.now() - 1000 * 60 * 80).toISOString(),
-    is_read: false,
-    has_attachments: true,
-    attachments: [
+    "cc": [],
+    "bcc": [],
+    "subject": "Doc",
+    "body_plain": "Hi Accounts Team,\nI am following up regarding invoice INV-2026-1042 for AUD 4,850.00, which was issued on 10 November 2026.\nThe payment is due today, 24 November 2026. Could you please confirm whether the payment has been processed?\nIf payment has already been made, kindly share the transaction reference.\nPlease treat this as urgent, as we need to close our accounts for this month.\nRegards,\nJames Wilson\nFinance Manager\nWilson & Associates\nPhone: +61 412 345 678",
+    "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><p></p><p>Hi Accounts Team,</p><p>I am following up regarding invoice INV-2026-1042 for AUD 4,850.00, which was issued on 10 November 2026.</p><p>The payment is due today, 24 November 2026. Could you please confirm whether the payment has been processed?</p><p>If payment has already been made, kindly share the transaction reference.</p><p>Please treat this as urgent, as we need to close our accounts for this month.</p><p>Regards,</p><p>James Wilson<br>Finance Manager<br>Wilson &amp; Associates<br>Phone: +61 412 345 678</p></div></body></html>",
+    "received_at": "2026-11-25T02:44:06Z",
+    "is_read": false,
+    "has_attachments": true,
+    "attachments": [
       {
-        id: 'att-102-1',
-        filename: 'Tax_Invoice_INV8831_ThorntonGroup.pdf',
-        content_type: 'application/pdf',
-        size_bytes: 843210,
-        sha256: 'e81a02738c6418b7625149a174092b678c1a938c6172e91739c9172837492c10',
-        is_inline: false,
-        storage_path: 'storage_data/attachments/e8/e81a02738c64.pdf',
-        downloaded_at: new Date(Date.now() - 1000 * 60 * 79).toISOString(),
-      },
+        "id": "120396ec70dd4f59b87e8d64f8e730ec",
+        "graph_attachment_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAfNUWAAABEgAQAH150AWbWXtIi7ZWLtPyrbs=",
+        "email_internal_id": "c2e35f0756cb4a6cbe5a428811006a43",
+        "filename": "Ibex_Mailbox_Triage_Technical_Specification_v0.1.pdf",
+        "content_type": "application/pdf",
+        "size_bytes": 1218,
+        "sha256": "0740a2601902a8ace2aae75b6c73f4ceded27fae1347da34ffb58637eced5820",
+        "is_inline": false,
+        "storage_path": "C:\\Users\\ayush\\OneDrive\\Desktop\\IBEX_core\\Email_Triage\\storage_data\\attachments\\07\\0740a2601902a8ace2aae75b6c73f4ceded27fae1347da34ffb58637eced5820.pdf",
+        "downloaded_at": "",
+        "ibex_compatible_payload": {
+          "schema_version": "1.0",
+          "document_id": "DOC-UNTITLED",
+          "message_id": "MSG-UNTITLED",
+          "client": {
+            "client_id": null,
+            "entity_id": null,
+            "group_id": null,
+            "client_name": null,
+            "confidence": 0.0,
+            "match_basis": "unmatched",
+            "matched_value": null
+          },
+          "classification": {
+            "document_type": "signed_return",
+            "subtype": null,
+            "confidence": 0.4,
+            "top_predictions": [
+              {
+                "document_type": "signed_return",
+                "subtype": null,
+                "confidence": 0.4
+              },
+              {
+                "document_type": "ato_notice",
+                "subtype": null,
+                "confidence": 0.08
+              },
+              {
+                "document_type": "platform_statement",
+                "subtype": null,
+                "confidence": 0.07
+              }
+            ]
+          },
+          "intent": {
+            "type": "no_action",
+            "confidence": 0.0
+          },
+          "extracted_fields": {
+            "supplier_name": "Hi Accounts Team,",
+            "abn": "61 412 345 678",
+            "reference": "INV-2026-1042",
+            "document_date": "10 November 2026",
+            "period_start": null,
+            "period_end": null,
+            "financial_year": "FY2027",
+            "amount_total": null,
+            "gst": null
+          },
+          "sensitivity": "normal",
+          "sensitivity_reasons": [],
+          "duplicate_of": null,
+          "suggested_job_ref": null,
+          "job_conf": 0.0,
+          "status": "needs_review",
+          "review_reasons": [
+            "Client confidence (0.00) below threshold (0.95)",
+            "Document type confidence (0.40) below threshold (0.85)"
+          ]
+        }
+      }
     ],
-    triage: {
-      category: 'Invoice / Finance',
-      priority: 'High',
-      confidence: 0.94,
-      action_required: true,
-      response_required: true,
-      follow_up_required: false,
-      suggested_action: 'Verify invoice details, validate Thornton Group Trust ABN against Australian Business Register, and schedule accounts payable approval for 05 December.',
-      due_date: '05 December',
-      summary: 'David Thornton submitted Tax Invoice #INV-8831 for Thornton Group Trust totaling $115,500.00 with payment required by 05 December.',
-      key_points: [
-        'Milestone 3 site prep tax invoice',
-        'Total payable: $115,500.00 ($10,500 GST)',
-        'Payment deadline: 05 December',
-        'Valid tax invoice attachment provided',
+    "triage": {
+      "category": "Urgent",
+      "priority": "Critical",
+      "confidence": 0.4,
+      "action_required": true,
+      "response_required": true,
+      "follow_up_required": false,
+      "suggested_action": "Review immediately and respond to sender.",
+      "due_date": null,
+      "summary": "Email from Chandni Poddar regarding 'Doc'. Hi Accounts Team,\nI am following up regarding invoice INV-2026-1042 for AUD 4,850.00, which was issued on 10 November 2026.",
+      "key_points": [
+        "Includes attachment(s): Ibex_Mailbox_Triage_Technical_Specification_v0.1.pdf",
+        "The payment is due today, 24 November 2026.",
+        "Could you please confirm whether the payment has been processed?",
+        "If payment has already been made, kindly share the transaction reference."
       ],
-      entities: {
-        amounts: ['$115,500.00', '$10,500'],
-        companies: ['Thornton Group Trust'],
-        due_date: '05 December',
-        sender_name: 'David Thornton',
+      "entities": {
+        "ai_classification": {
+          "document_type": "signed_return",
+          "platform_subtype": null,
+          "confidence": 0.4,
+          "status": "needs_review",
+          "client": {
+            "client_id": null,
+            "entity_id": null,
+            "group_id": null,
+            "client_name": null,
+            "confidence": 0.0,
+            "match_basis": "unmatched",
+            "matched_value": null
+          },
+          "extracted_fields": {
+            "supplier_name": "Hi Accounts Team,",
+            "abn": "61 412 345 678",
+            "reference": "INV-2026-1042",
+            "document_date": "10 November 2026",
+            "period_start": null,
+            "period_end": null,
+            "financial_year": "FY2027",
+            "amount_total": null,
+            "gst": null
+          },
+          "sensitivity": "normal",
+          "suggested_job_ref": null,
+          "review_reasons": [
+            "Client confidence (0.00) below threshold (0.95)",
+            "Document type confidence (0.40) below threshold (0.85)"
+          ]
+        },
+        "amounts": [
+          "$4,850.00"
+        ],
+        "sender_name": "Chandni Poddar"
       },
-      triaged_at: new Date(Date.now() - 1000 * 60 * 79).toISOString(),
+      "triaged_at": "2026-11-25T02:44:20.762773+00:00"
     },
-    processing_status: 'ATTACHMENTS_PROCESSED',
-    retry_count: 0,
-    created_at: new Date(Date.now() - 1000 * 60 * 80).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 79).toISOString(),
+    "processing_status": "TRIAGED",
+    "error_message": "",
+    "retry_count": 0,
+    "created_at": "2026-11-25T02:44:15.438146+00:00",
+    "updated_at": "2026-11-25T02:44:15.438149+00:00"
   },
   {
-    internal_id: 'em-103',
-    graph_message_id: 'AAMkAGI2AAAt103=',
-    conversation_id: 'conv-003',
-    sender_name: 'Marcus Sterling',
-    sender_email: 'm.sterling@apexadvisory.com.au',
-    recipients: [{ name: 'Partner Incharge', email: 'partner@yourpractice.com.au' }],
-    cc: [{ name: 'Triage Mailbox', email: 'triage@yourpractice.com.au' }],
-    subject: 'Client Meeting Request: FY26 Tax Planning & Trust Distribution Strategy',
-    body_plain: `Hi Partners,\n\nWe would like to book a 45-minute virtual meeting next Tuesday (2 December) at 2:00 PM AEDT with our board regarding the annual trust distribution minutes and section 100A compliance for Apex Holdings Pty Ltd.\n\nCould your executive assistant confirm availability or propose alternative slots?\n\nRegards,\nMarcus`,
-    body_html: `<p>Hi Partners,</p><p>We would like to book a 45-minute virtual meeting next Tuesday (<strong>2 December</strong>) at <strong>2:00 PM AEDT</strong> with our board regarding the annual trust distribution minutes and section 100A compliance for <strong>Apex Holdings Pty Ltd</strong>.</p><p>Could your executive assistant confirm availability or propose alternative slots?</p><p>Regards,<br/>Marcus</p>`,
-    received_at: new Date(Date.now() - 1000 * 60 * 140).toISOString(),
-    is_read: true,
-    has_attachments: false,
-    attachments: [],
-    triage: {
-      category: 'Meeting / Scheduling',
-      priority: 'Medium',
-      confidence: 0.91,
-      action_required: true,
-      response_required: true,
-      follow_up_required: false,
-      suggested_action: 'Check partner calendars for 2 December 2:00 PM AEDT and send meeting confirmation invite with Teams link.',
-      due_date: '02 December',
-      summary: 'Marcus Sterling requests a 45-minute virtual meeting on 2 December at 2:00 PM AEDT to discuss trust distribution strategy and section 100A compliance.',
-      key_points: [
-        'Meeting request for 2 December, 2:00 PM AEDT',
-        'Topic: Trust distribution minutes & Section 100A',
-        'Company: Apex Holdings Pty Ltd',
-      ],
-      entities: {
-        companies: ['Apex Holdings Pty Ltd'],
-        due_date: '02 December',
-        sender_name: 'Marcus Sterling',
-      },
-      triaged_at: new Date(Date.now() - 1000 * 60 * 139).toISOString(),
-    },
-    processing_status: 'TRIAGED',
-    retry_count: 0,
-    created_at: new Date(Date.now() - 1000 * 60 * 140).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 139).toISOString(),
-  },
-  {
-    internal_id: 'em-104',
-    graph_message_id: 'AAMkAGI2AAAt104=',
-    conversation_id: 'conv-004',
-    sender_name: 'Elena Rostova',
-    sender_email: 'elena@novatechconsulting.io',
-    recipients: [{ name: 'Triage Team', email: 'triage@yourpractice.com.au' }],
-    cc: [],
-    subject: 'Action Required: Signoff on 2026 Fringe Benefits Tax (FBT) Declarations',
-    body_plain: `Good morning,\n\nOur payroll team has finalized the employee car benefit and entertainment logbooks for NovaTech Solutions Pty Ltd. The signed declarations must be returned by Thursday this week (27 November) for final sign-off before our payroll run.\n\nPlease review the attached summary schedule.\n\nElena Rostova`,
-    body_html: `<p>Good morning,</p><p>Our payroll team has finalized the employee car benefit and entertainment logbooks for <strong>NovaTech Solutions Pty Ltd</strong>. The signed declarations must be returned by <strong>Thursday this week (27 November)</strong> for final sign-off before our payroll run.</p><p>Please review the attached summary schedule.</p><p>Elena Rostova</p>`,
-    received_at: new Date(Date.now() - 1000 * 60 * 220).toISOString(),
-    is_read: false,
-    has_attachments: true,
-    attachments: [
+    "internal_id": "def918aa8d5640abaad707534c6e199e",
+    "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAfNUVAAA=",
+    "internet_message_id": "<CAFXFHpOBopq4oALVhQ6fk3TKVsruF_SWqkiBqT6Qr_vELVd1nw@mail.gmail.com>",
+    "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQADdfIYLgIqhNjTLfO8AYApA=",
+    "sender_name": "Ayushi Singh",
+    "sender_email": "ayushiisingh08@gmail.com",
+    "recipients": [
       {
-        id: 'att-104-1',
-        filename: 'NovaTech_FBT_Declarations_2026.pdf',
-        content_type: 'application/pdf',
-        size_bytes: 651900,
-        sha256: 'b45c928471e98a104f7281c9a837012984b7201c84710129c87129038b71290a',
-        is_inline: false,
-        storage_path: 'storage_data/attachments/b4/b45c928471e9.pdf',
-        downloaded_at: new Date(Date.now() - 1000 * 60 * 219).toISOString(),
-      },
+        "name": "IBEX Mailbox Triage",
+        "email": "ibex.triage@aoscaustralia.com"
+      }
     ],
-    triage: {
-      category: 'Action Required',
-      priority: 'High',
-      confidence: 0.92,
-      action_required: true,
-      response_required: true,
-      follow_up_required: true,
-      suggested_action: 'Review car benefit computations and obtain partner signature on FBT declaration before 27 November.',
-      due_date: '27 November',
-      summary: 'Elena Rostova requests urgent signoff and return of FBT declarations for NovaTech Solutions Pty Ltd before 27 November.',
-      key_points: [
-        'FBT declarations finalized for car benefit & entertainment',
-        'Signed declarations required by 27 November',
-        'Attached FBT schedule requires tax partner review',
+    "cc": [],
+    "bcc": [],
+    "subject": "Test Invoice from New Sender",
+    "body_plain": "Hello Team, please find our invoice attached.",
+    "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><code dir=\"ltr\">Hello Team, please find our invoice attached.</code></div></body></html>",
+    "received_at": "2026-11-25T02:37:33Z",
+    "is_read": false,
+    "has_attachments": false,
+    "attachments": [],
+    "triage": {
+      "category": "Invoice / Finance",
+      "priority": "Medium",
+      "confidence": 0.69,
+      "action_required": false,
+      "response_required": false,
+      "follow_up_required": false,
+      "suggested_action": "Verify invoice details, check ABN and match with accounting records.",
+      "due_date": null,
+      "summary": "Email from Ayushi Singh regarding 'Test Invoice from New Sender'. Hello Team, please find our invoice attached.",
+      "key_points": [
+        "Hello Team, please find our invoice attached."
       ],
-      entities: {
-        companies: ['NovaTech Solutions Pty Ltd'],
-        due_date: '27 November',
-        sender_name: 'Elena Rostova',
+      "entities": {
+        "sender_name": "Ayushi Singh",
+        "ai_classification": {
+          "document_type": "supplier_invoice",
+          "platform_subtype": null,
+          "confidence": 0.81,
+          "status": "needs_review",
+          "client": {
+            "client_id": null,
+            "entity_id": null,
+            "group_id": null,
+            "client_name": null,
+            "confidence": 0.0,
+            "match_basis": "unmatched",
+            "matched_value": null
+          },
+          "extracted_fields": {
+            "supplier_name": "Hello Team, please find our",
+            "abn": null,
+            "reference": "attached",
+            "document_date": null,
+            "period_start": null,
+            "period_end": null,
+            "financial_year": null,
+            "amount_total": null,
+            "gst": null
+          },
+          "sensitivity": "normal",
+          "suggested_job_ref": null,
+          "review_reasons": [
+            "Client confidence (0.00) below threshold (0.95)",
+            "Document type confidence (0.81) below threshold (0.85)"
+          ]
+        }
       },
-      triaged_at: new Date(Date.now() - 1000 * 60 * 219).toISOString(),
+      "triaged_at": "2026-11-25T02:37:43.763310+00:00"
     },
-    processing_status: 'ATTACHMENTS_PROCESSED',
-    retry_count: 0,
-    created_at: new Date(Date.now() - 1000 * 60 * 220).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 219).toISOString(),
+    "processing_status": "TRIAGED",
+    "error_message": "",
+    "retry_count": 0,
+    "created_at": "2026-11-25T02:37:39.466218+00:00",
+    "updated_at": "2026-11-25T02:37:39.466221+00:00"
   },
   {
-    internal_id: 'em-105',
-    graph_message_id: 'AAMkAGI2AAAt105=',
-    conversation_id: 'conv-005',
-    sender_name: 'Australian Taxation Office (ATO)',
-    sender_email: 'noreply@ato.gov.au',
-    recipients: [{ name: 'Tax Agent Portal', email: 'triage@yourpractice.com.au' }],
-    cc: [],
-    subject: 'Information: Updated Client Activity Statement (CAS) Portal Notification',
-    body_plain: `Activity Statement accounts have been updated for 14 registered client entities. Please log into Online Services for Agents to review the portal messages. This is an informational notice regarding monthly integrated client accounts.`,
-    body_html: `<p>Activity Statement accounts have been updated for 14 registered client entities. Please log into Online Services for Agents to review the portal messages. This is an informational notice regarding monthly integrated client accounts.</p>`,
-    received_at: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
-    is_read: true,
-    has_attachments: false,
-    attachments: [],
-    triage: {
-      category: 'Information / FYI',
-      priority: 'Low',
-      confidence: 0.89,
-      action_required: false,
-      response_required: false,
-      follow_up_required: false,
-      suggested_action: 'Batch review CAS updates during weekly agent portal cycle.',
-      due_date: null,
-      summary: 'Automated notification from ATO regarding updated activity statement records across 14 practice clients.',
-      key_points: [
-        'Routine portal notice for registered entities',
-        'No immediate action required',
+    "internal_id": "7ae2545c79cb4a0bbe4d07f46e0ee034",
+    "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAAAVRAAA=",
+    "internet_message_id": "<CAFjUDf5H8Nikm-2S5OXGradtzsomhy5ZGJofG0zCVHJvA=0dYw@mail.gmail.com>",
+    "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQADsrNi6E8gNKj01RJu_j1PE=",
+    "sender_name": "Chandni Poddar",
+    "sender_email": "poddarchandni5@gmail.com",
+    "recipients": [
+      {
+        "name": "IBEX Mailbox Triage",
+        "email": "ibex.triage@aoscaustralia.com"
+      }
+    ],
+    "cc": [],
+    "bcc": [],
+    "subject": "Re: Urgent: FY26 Tax Invoice #1042 - Acme Pty Ltd",
+    "body_plain": "doc is ok\nOn Tue, 24 Nov 2026 at 12:36, Chandni Poddar < poddarchandni5@gmail.com > wrote:\ni will check the doc\nOn Tue, 24 Nov 2026 at 10:26, Chandni Poddar < poddarchandni5@gmail.com > wrote:\nHi Team,\nPlease find attached our tax invoice for $12,500.00 AUD (including $1,136.36 GST) for Acme Holdings Pty Ltd.\nPayment is due by 30 November. Could you please reconcile and confirm receipt?",
+    "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">doc is ok<div><br></div></div><br><div class=\"gmail_quote gmail_quote_container\"><div dir=\"ltr\" class=\"gmail_attr\">On Tue, 24 Nov 2026 at 12:36, Chandni Poddar &lt;<a href=\"mailto:poddarchandni5@gmail.com\">poddarchandni5@gmail.com</a>&gt; wrote:<br></div><blockquote class=\"gmail_quote\" style=\"margin:0px 0px 0px 0.8ex; border-left:1px solid rgb(204,204,204); padding-left:1ex\"><div dir=\"ltr\">i will check the doc<div><br></div></div><br><div class=\"gmail_quote\"><div dir=\"ltr\" class=\"gmail_attr\">On Tue, 24 Nov 2026 at 10:26, Chandni Poddar &lt;<a href=\"mailto:poddarchandni5@gmail.com\" target=\"_blank\">poddarchandni5@gmail.com</a>&gt; wrote:<br></div><blockquote class=\"gmail_quote\" style=\"margin:0px 0px 0px 0.8ex; border-left:1px solid rgb(204,204,204); padding-left:1ex\"><div dir=\"ltr\"><span>Hi </span><span>Team,</span><span><br></span><span></span><span></span><span>Please </span><span>find </span><span>attached </span><span>our </span><span>tax </span><span>invoice </span><span>for </span><span>$12,500.00 </span><span>AUD </span><span>(including </span><span>$1,136.36 </span><span>GST) </span><span>for </span><span>Acme </span><span>Holdings </span><span>Pty </span><span>Ltd.</span><span><br></span><span></span><span></span><span>Payment </span><span>is </span><span>due </span><span>by </span><span>30 </span><span>November. </span><span>Could </span><span>you </span><span>please </span><span>reconcile </span><span>and </span><span>confirm </span><span>receipt?</span></div></blockquote></div></blockquote></div></body></html>",
+    "received_at": "2026-11-24T08:43:00Z",
+    "is_read": false,
+    "has_attachments": false,
+    "attachments": [],
+    "triage": {
+      "category": "Urgent",
+      "priority": "Critical",
+      "confidence": 0.93,
+      "action_required": true,
+      "response_required": true,
+      "follow_up_required": false,
+      "suggested_action": "Review immediately and respond to sender.",
+      "due_date": "30 November",
+      "summary": "Email from Chandni Poddar regarding 'Re: Urgent: FY26 Tax Invoice #1042 - Acme Pty Ltd'. doc is ok\nOn Tue, 24 Nov 2026 at 12:36, Chandni Poddar < poddarchandni5@gmail.com > wrote:\ni will check the doc\nOn Tue, 24 Nov 2026 at 10:26, Chandni Poddar < poddarchandni5@gmail.com > wrote:\nHi Team",
+      "key_points": [
+        "Payment is due by 30 November.",
+        "Could you please reconcile and confirm receipt?"
       ],
-      entities: {
-        sender_name: 'Australian Taxation Office (ATO)',
+      "entities": {
+        "ai_classification": {
+          "document_type": "supplier_invoice",
+          "platform_subtype": null,
+          "confidence": 0.93,
+          "status": "needs_review",
+          "client": {
+            "client_id": null,
+            "entity_id": null,
+            "group_id": null,
+            "client_name": null,
+            "confidence": 0.0,
+            "match_basis": "unmatched",
+            "matched_value": null
+          },
+          "extracted_fields": {
+            "supplier_name": "doc is ok",
+            "abn": null,
+            "reference": "for",
+            "document_date": "24 Nov 2026",
+            "period_start": null,
+            "period_end": null,
+            "financial_year": "FY2027",
+            "amount_total": null,
+            "gst": null
+          },
+          "sensitivity": "normal",
+          "suggested_job_ref": null,
+          "review_reasons": [
+            "Client confidence (0.00) below threshold (0.95)"
+          ]
+        },
+        "due_date": "30 November",
+        "amounts": [
+          "$12,500.00",
+          "$1,136.36"
+        ],
+        "companies": [
+          "Acme Pty Ltd",
+          "Acme Holdings Pty Ltd"
+        ],
+        "sender_name": "Chandni Poddar"
       },
-      triaged_at: new Date(Date.now() - 1000 * 60 * 359).toISOString(),
+      "triaged_at": "2026-11-24T08:53:42.271611+00:00"
     },
-    processing_status: 'TRIAGED',
-    retry_count: 0,
-    created_at: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 359).toISOString(),
+    "processing_status": "INGESTED",
+    "error_message": "",
+    "retry_count": 0,
+    "created_at": "2026-11-25T02:23:29.915671+00:00",
+    "updated_at": "2026-11-25T02:23:29.915675+00:00"
   },
   {
-    internal_id: 'em-106',
-    graph_message_id: 'AAMkAGI2AAAt106=',
-    conversation_id: 'conv-006',
-    sender_name: 'Liam Gallagher',
-    sender_email: 'liam@gallagherprop.com.au',
-    recipients: [{ name: 'Triage Team', email: 'triage@yourpractice.com.au' }],
-    cc: [],
-    subject: 'Follow-up Required: Commercial Lease Stamp Duty Assessment for Brisbane Property',
-    body_plain: `Hi guys,\n\nFollowing up on our email from last week regarding the Queensland revenue stamp duty assessment for the Queen St lease ($12,400). Have you heard back from the State Revenue Office? Please advise on the timeline as settlement is scheduled for next Friday.\n\nCheers,\nLiam`,
-    body_html: `<p>Hi guys,</p><p>Following up on our email from last week regarding the Queensland revenue stamp duty assessment for the Queen St lease (<strong>$12,400</strong>). Have you heard back from the State Revenue Office? Please advise on the timeline as settlement is scheduled for next Friday.</p><p>Cheers,<br/>Liam</p>`,
-    received_at: new Date(Date.now() - 1000 * 60 * 480).toISOString(),
-    is_read: false,
-    has_attachments: false,
-    attachments: [],
-    triage: {
-      category: 'Follow-up Required',
-      priority: 'Medium',
-      confidence: 0.93,
-      action_required: true,
-      response_required: true,
-      follow_up_required: true,
-      suggested_action: 'Check QRO agent portal status for Queen St lease stamp duty and email update to Liam Gallagher.',
-      due_date: 'Friday',
-      summary: 'Liam Gallagher requests a progress update on the $12,400 Queensland stamp duty assessment ahead of next Friday\'s commercial settlement.',
-      key_points: [
-        'Pending stamp duty status with Queensland State Revenue Office',
-        'Transaction value reference: $12,400',
-        'Settlement scheduled for next Friday',
+    "internal_id": "1d78077072b746bd9962fdef176eecd6",
+    "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAETAAB85UnBCohpQqam-W0465BRAAAAAEPnAAA=",
+    "internet_message_id": "<CAFjUDf4PVGiDAEUHkDjXhjFHT0JsjW5=1jtG5HWd7AmFvk7BjA@mail.gmail.com>",
+    "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQAFPKul3TznBOhw9WVGuyRDo=",
+    "sender_name": "Chandni Poddar",
+    "sender_email": "poddarchandni5@gmail.com",
+    "recipients": [
+      {
+        "name": "IBEX Mailbox Triage",
+        "email": "ibex.triage@aoscaustralia.com"
+      }
+    ],
+    "cc": [],
+    "bcc": [],
+    "subject": "URGENT: Outstanding Invoice INV-2026-1042 – Payment Due Today",
+    "body_plain": "Hi Accounts Team,\nI am following up regarding invoice INV-2026-1042 for AUD 4,850.00, which was issued on 10 November 2026.\nThe payment is due today, 24 November 2026. Could you please confirm whether the payment has been processed?\nIf payment has already been made, kindly share the transaction reference.\nPlease treat this as urgent, as we need to close our accounts for this month.\nRegards,\nJames Wilson\nFinance Manager\nWilson & Associates\nPhone: +61 412 345 678",
+    "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><p>Hi Accounts Team,</p><p>I am following up regarding invoice INV-2026-1042 for AUD 4,850.00, which was issued on 10 November 2026.</p><p>The payment is due today, 24 November 2026. Could you please confirm whether the payment has been processed?</p><p>If payment has already been made, kindly share the transaction reference.</p><p>Please treat this as urgent, as we need to close our accounts for this month.</p><p>Regards,</p><p>James Wilson<br>Finance Manager<br>Wilson &amp; Associates<br>Phone: +61 412 345 678</p></div></body></html>",
+    "received_at": "2026-11-24T08:29:20Z",
+    "is_read": false,
+    "has_attachments": false,
+    "attachments": [],
+    "triage": {
+      "category": "Urgent",
+      "priority": "Critical",
+      "confidence": 0.71,
+      "action_required": true,
+      "response_required": true,
+      "follow_up_required": false,
+      "suggested_action": "Review immediately and respond to sender.",
+      "due_date": null,
+      "summary": "Email from Chandni Poddar regarding 'URGENT: Outstanding Invoice INV-2026-1042 – Payment Due Today'. Hi Accounts Team,\nI am following up regarding invoice INV-2026-1042 for AUD 4,850.00, which was issued on 10 November 2026.",
+      "key_points": [
+        "The payment is due today, 24 November 2026.",
+        "Could you please confirm whether the payment has been processed?",
+        "If payment has already been made, kindly share the transaction reference."
       ],
-      entities: {
-        amounts: ['$12,400'],
-        companies: ['Gallagher Properties Pty Ltd'],
-        due_date: 'Friday',
-        sender_name: 'Liam Gallagher',
+      "entities": {
+        "amounts": [
+          "$4,850.00"
+        ],
+        "sender_name": "Chandni Poddar",
+        "ai_classification": {
+          "document_type": "signed_return",
+          "platform_subtype": null,
+          "confidence": 0.4,
+          "status": "needs_review",
+          "client": {
+            "client_id": null,
+            "entity_id": null,
+            "group_id": null,
+            "client_name": null,
+            "confidence": 0.0,
+            "match_basis": "unmatched",
+            "matched_value": null
+          },
+          "extracted_fields": {
+            "supplier_name": "Hi Accounts Team,",
+            "abn": "61 412 345 678",
+            "reference": "INV-2026-1042",
+            "document_date": "10 November 2026",
+            "period_start": null,
+            "period_end": null,
+            "financial_year": "FY2027",
+            "amount_total": null,
+            "gst": null
+          },
+          "sensitivity": "normal",
+          "suggested_job_ref": null,
+          "review_reasons": [
+            "Client confidence (0.00) below threshold (0.95)",
+            "Document type confidence (0.40) below threshold (0.85)"
+          ]
+        }
       },
-      triaged_at: new Date(Date.now() - 1000 * 60 * 479).toISOString(),
+      "triaged_at": "2026-11-25T02:23:34.852750+00:00"
     },
-    processing_status: 'TRIAGED',
-    retry_count: 0,
-    created_at: new Date(Date.now() - 1000 * 60 * 480).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 479).toISOString(),
+    "processing_status": "TRIAGED",
+    "error_message": "",
+    "retry_count": 0,
+    "created_at": "2026-11-25T02:23:31.208109+00:00",
+    "updated_at": "2026-11-25T02:23:31.208113+00:00"
   },
   {
-    internal_id: 'em-107',
-    graph_message_id: 'AAMkAGI2AAAt107=',
-    conversation_id: 'conv-007',
-    sender_name: 'Xero Accounting API',
-    sender_email: 'api-alerts@xero.com',
-    recipients: [{ name: 'Integrations Admin', email: 'admin@yourpractice.com.au' }],
-    cc: [],
-    subject: 'Technical Issue: OAuth2 Refresh Token Expired for Client Org #9182',
-    body_plain: `The automated daily bank feed sync failed for client organisation "Melbourne Craft Roasters Pty Ltd" due to an expired OAuth 2.0 refresh token. Please re-authenticate the practice connection via the Xero Partner Portal.`,
-    body_html: `<p>The automated daily bank feed sync failed for client organisation <strong>Melbourne Craft Roasters Pty Ltd</strong> due to an expired OAuth 2.0 refresh token. Please re-authenticate the practice connection via the Xero Partner Portal.</p>`,
-    received_at: new Date(Date.now() - 1000 * 60 * 600).toISOString(),
-    is_read: true,
-    has_attachments: false,
-    attachments: [],
-    triage: {
-      category: 'Technical Issue',
-      priority: 'Medium',
-      confidence: 0.95,
-      action_required: true,
-      response_required: false,
-      follow_up_required: false,
-      suggested_action: 'Re-authorize Xero connection token for Melbourne Craft Roasters in practice integration dashboard.',
-      due_date: null,
-      summary: 'Xero alert: Bank feed sync paused due to expired token for Melbourne Craft Roasters Pty Ltd.',
-      key_points: [
-        'API connection failed for Org #9182',
-        'Bank feeds stopped pending OAuth renewal',
+    "internal_id": "63f288ed605340e98325841338efa8c4",
+    "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAAAVQAAA=",
+    "internet_message_id": "<CAFjUDf7JCsAxA+Tq6d26Oy2ogBd6V3JRgd=5KEDC-Ac0yvU3CQ@mail.gmail.com>",
+    "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQADsrNi6E8gNKj01RJu_j1PE=",
+    "sender_name": "Chandni Poddar",
+    "sender_email": "poddarchandni5@gmail.com",
+    "recipients": [
+      {
+        "name": "IBEX Mailbox Triage",
+        "email": "ibex.triage@aoscaustralia.com"
+      }
+    ],
+    "cc": [],
+    "bcc": [],
+    "subject": "Re: Urgent: FY26 Tax Invoice #1042 - Acme Pty Ltd",
+    "body_plain": "i will check the doc\nOn Tue, 24 Nov 2026 at 10:26, Chandni Poddar < poddarchandni5@gmail.com > wrote:\nHi Team,\nPlease find attached our tax invoice for $12,500.00 AUD (including $1,136.36 GST) for Acme Holdings Pty Ltd.\nPayment is due by 30 November. Could you please reconcile and confirm receipt?",
+    "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">i will check the doc<div><br></div></div><br><div class=\"gmail_quote gmail_quote_container\"><div dir=\"ltr\" class=\"gmail_attr\">On Tue, 24 Nov 2026 at 10:26, Chandni Poddar &lt;<a href=\"mailto:poddarchandni5@gmail.com\">poddarchandni5@gmail.com</a>&gt; wrote:<br></div><blockquote class=\"gmail_quote\" style=\"margin:0px 0px 0px 0.8ex; border-left:1px solid rgb(204,204,204); padding-left:1ex\"><div dir=\"ltr\"><span>Hi </span><span>Team,</span><span><br></span><span></span><span></span><span>Please </span><span>find </span><span>attached </span><span>our </span><span>tax </span><span>invoice </span><span>for </span><span>$12,500.00 </span><span>AUD </span><span>(including </span><span>$1,136.36 </span><span>GST) </span><span>for </span><span>Acme </span><span>Holdings </span><span>Pty </span><span>Ltd.</span><span><br></span><span></span><span></span><span>Payment </span><span>is </span><span>due </span><span>by </span><span>30 </span><span>November. </span><span>Could </span><span>you </span><span>please </span><span>reconcile </span><span>and </span><span>confirm </span><span>receipt?</span></div></blockquote></div></body></html>",
+    "received_at": "2026-11-24T08:05:44Z",
+    "is_read": false,
+    "has_attachments": false,
+    "attachments": [],
+    "triage": {
+      "category": "Urgent",
+      "priority": "Critical",
+      "confidence": 0.93,
+      "action_required": true,
+      "response_required": true,
+      "follow_up_required": false,
+      "suggested_action": "Review immediately and respond to sender.",
+      "due_date": "30 November",
+      "summary": "Email from Chandni Poddar regarding 'Re: Urgent: FY26 Tax Invoice #1042 - Acme Pty Ltd'. i will check the doc\nOn Tue, 24 Nov 2026 at 10:26, Chandni Poddar < poddarchandni5@gmail.com > wrote:\nHi Team,\nPlease find attached our tax invoice for $12,500.00 AUD (including $1,136.36 GST) for Acm",
+      "key_points": [
+        "Payment is due by 30 November.",
+        "Could you please reconcile and confirm receipt?"
       ],
-      entities: {
-        companies: ['Melbourne Craft Roasters Pty Ltd'],
-        sender_name: 'Xero Accounting API',
+      "entities": {
+        "ai_classification": {
+          "document_type": "supplier_invoice",
+          "platform_subtype": null,
+          "confidence": 0.93,
+          "status": "needs_review",
+          "client": {
+            "client_id": null,
+            "entity_id": null,
+            "group_id": null,
+            "client_name": null,
+            "confidence": 0.0,
+            "match_basis": "unmatched",
+            "matched_value": null
+          },
+          "extracted_fields": {
+            "supplier_name": "i will check the doc",
+            "abn": null,
+            "reference": "for",
+            "document_date": "24 Nov 2026",
+            "period_start": null,
+            "period_end": null,
+            "financial_year": "FY2027",
+            "amount_total": null,
+            "gst": null
+          },
+          "sensitivity": "normal",
+          "suggested_job_ref": null,
+          "review_reasons": [
+            "Client confidence (0.00) below threshold (0.95)"
+          ]
+        },
+        "due_date": "30 November",
+        "amounts": [
+          "$12,500.00",
+          "$1,136.36"
+        ],
+        "companies": [
+          "Acme Pty Ltd",
+          "Acme Holdings Pty Ltd"
+        ],
+        "sender_name": "Chandni Poddar"
       },
-      triaged_at: new Date(Date.now() - 1000 * 60 * 599).toISOString(),
+      "triaged_at": "2026-11-24T08:53:43.280364+00:00"
     },
-    processing_status: 'TRIAGED',
-    retry_count: 0,
-    created_at: new Date(Date.now() - 1000 * 60 * 600).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 599).toISOString(),
-  },
-  {
-    internal_id: 'em-108',
-    graph_message_id: 'AAMkAGI2AAAt108=',
-    conversation_id: 'conv-008',
-    sender_name: 'Claire Beauchamp',
-    sender_email: 'claire@beauchampfamilyoffice.com.au',
-    recipients: [{ name: 'Triage Team', email: 'triage@yourpractice.com.au' }],
-    cc: [],
-    subject: 'Client Communication: Dividend Statements & Franking Credits for FY26',
-    body_plain: `Dear Partners,\n\nCould you please confirm whether the BHP and Macquarie interim dividend franking credit certificates have been applied to our family discretionary trust tax ledger? We want to verify our refundable tax offsets before year end.\n\nWarm regards,\nClaire Beauchamp`,
-    body_html: `<p>Dear Partners,</p><p>Could you please confirm whether the BHP and Macquarie interim dividend franking credit certificates have been applied to our family discretionary trust tax ledger? We want to verify our refundable tax offsets before year end.</p><p>Warm regards,<br/>Claire Beauchamp</p>`,
-    received_at: new Date(Date.now() - 1000 * 60 * 750).toISOString(),
-    is_read: true,
-    has_attachments: false,
-    attachments: [],
-    triage: {
-      category: 'Client Communication',
-      priority: 'Low',
-      confidence: 0.91,
-      action_required: true,
-      response_required: true,
-      follow_up_required: false,
-      suggested_action: 'Confirm franking credit schedules for BHP & Macquarie in Beauchamp Trust ledger and respond to client.',
-      due_date: null,
-      summary: 'Claire Beauchamp enquires regarding franking credits and interim dividend allocations for the family trust.',
-      key_points: [
-        'BHP & Macquarie dividend schedule inquiry',
-        'Franking offset confirmation for family discretionary trust',
-      ],
-      entities: {
-        companies: ['Beauchamp Family Office', 'BHP', 'Macquarie'],
-        sender_name: 'Claire Beauchamp',
-      },
-      triaged_at: new Date(Date.now() - 1000 * 60 * 749).toISOString(),
-    },
-    processing_status: 'TRIAGED',
-    retry_count: 0,
-    created_at: new Date(Date.now() - 1000 * 60 * 750).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 749).toISOString(),
-  },
-  {
-    internal_id: 'em-109',
-    graph_message_id: 'AAMkAGI2AAAt109=',
-    conversation_id: 'conv-009',
-    sender_name: 'Crypto Gold Opportunities',
-    sender_email: 'returns@fast-wealth-direct992.xyz',
-    recipients: [{ name: 'General Inquiries', email: 'triage@yourpractice.com.au' }],
-    cc: [],
-    subject: 'Guaranteed 300% ROI Weekly with Automated AI Mining Bots!',
-    body_plain: `Claim your complimentary cryptocurrency portfolio allocation. Act now to secure guaranteed yields. Click here to claim.`,
-    body_html: `<p>Claim your complimentary cryptocurrency portfolio allocation. Act now to secure guaranteed yields. Click here to claim.</p>`,
-    received_at: new Date(Date.now() - 1000 * 60 * 920).toISOString(),
-    is_read: true,
-    has_attachments: false,
-    attachments: [],
-    triage: {
-      category: 'Spam / Unwanted',
-      priority: 'Low',
-      confidence: 0.99,
-      action_required: false,
-      response_required: false,
-      follow_up_required: false,
-      suggested_action: 'Filtered out automatically as junk spam.',
-      due_date: null,
-      summary: 'Unsolicited cryptocurrency investment marketing email.',
-      key_points: [
-        'Classified as spam',
-        'Zero action required',
-      ],
-      entities: {},
-      triaged_at: new Date(Date.now() - 1000 * 60 * 919).toISOString(),
-    },
-    processing_status: 'TRIAGED',
-    retry_count: 0,
-    created_at: new Date(Date.now() - 1000 * 60 * 920).toISOString(),
-    updated_at: new Date(Date.now() - 1000 * 60 * 919).toISOString(),
-  },
+    "processing_status": "INGESTED",
+    "error_message": "",
+    "retry_count": 0,
+    "created_at": "2026-11-25T02:23:29.920977+00:00",
+    "updated_at": "2026-11-25T02:23:29.920980+00:00"
+  }
 ];

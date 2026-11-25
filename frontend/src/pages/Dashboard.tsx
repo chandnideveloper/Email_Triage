@@ -92,7 +92,7 @@ export const Dashboard: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/inbox')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-md transition active:scale-[0.98] shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg shadow-sm shadow-indigo-500/25 transition active:scale-[0.98] cursor-pointer"
           >
             <Inbox className="w-3.5 h-3.5" />
             Open Inbox
@@ -101,17 +101,17 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Primary KPI Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
         {/* Total Processed */}
-        <div className="p-3.5 rounded-lg border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121316] shadow-2xs">
-          <div className="flex items-center justify-between text-zinc-500 mb-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Processed</span>
-            <Inbox className="w-3.5 h-3.5 text-zinc-400" />
+        <div className="p-4 rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm hover:border-indigo-400 dark:hover:border-indigo-600 transition">
+          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Processed</span>
+            <Inbox className="w-3.5 h-3.5 text-indigo-500" />
           </div>
-          <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">
             {data.totalProcessed.toLocaleString()}
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
+          <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-mono font-medium">
             <TrendingUp className="w-3 h-3" />
             +18% MTD
           </div>
@@ -120,88 +120,88 @@ export const Dashboard: React.FC = () => {
         {/* Unread */}
         <div
           onClick={() => navigate('/inbox?read=unread')}
-          className="p-3.5 rounded-lg border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121316] shadow-2xs cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-700 transition"
+          className="p-4 rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-600 transition"
         >
-          <div className="flex items-center justify-between text-zinc-500 mb-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Unread</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100" />
+          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Unread</span>
+            <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_6px_rgba(99,102,241,0.6)]" />
           </div>
-          <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">
             {data.unreadCount}
           </div>
-          <p className="text-[10px] text-zinc-400 mt-1">Awaiting triage</p>
+          <p className="text-[10px] text-slate-400 mt-1 font-medium">Awaiting triage</p>
         </div>
 
         {/* Action Required */}
         <div
           onClick={() => navigate('/inbox?action=true')}
-          className="p-3.5 rounded-lg border border-amber-500/30 bg-amber-50/20 dark:bg-amber-950/10 shadow-2xs cursor-pointer hover:border-amber-500/50 transition"
+          className="p-4 rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent shadow-sm cursor-pointer hover:border-amber-500/50 transition"
         >
-          <div className="flex items-center justify-between text-amber-700 dark:text-amber-400 mb-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Action Req.</span>
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+          <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider">Action Req.</span>
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
           </div>
-          <div className="text-2xl font-bold text-amber-800 dark:text-amber-300 font-mono tracking-tight">
+          <div className="text-2xl font-bold text-amber-700 dark:text-amber-300 font-mono tracking-tight">
             {data.actionRequiredCount}
           </div>
-          <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 mt-1 font-medium">Attention needed</p>
+          <p className="text-[10px] text-amber-600/80 dark:text-amber-400/80 mt-1 font-semibold">Attention needed</p>
         </div>
 
         {/* Urgent / P1 */}
         <div
           onClick={() => navigate('/inbox?priority=Critical')}
-          className="p-3.5 rounded-lg border border-red-500/30 bg-red-50/20 dark:bg-red-950/10 shadow-2xs cursor-pointer hover:border-red-500/50 transition"
+          className="p-4 rounded-xl border border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent shadow-sm cursor-pointer hover:border-rose-500/50 transition"
         >
-          <div className="flex items-center justify-between text-red-700 dark:text-red-400 mb-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Urgent / P1</span>
-            <Zap className="w-3.5 h-3.5 text-red-600" />
+          <div className="flex items-center justify-between text-rose-600 dark:text-rose-400 mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider">Urgent / P1</span>
+            <Zap className="w-3.5 h-3.5 text-rose-500" />
           </div>
-          <div className="text-2xl font-bold text-red-800 dark:text-red-300 font-mono tracking-tight">
+          <div className="text-2xl font-bold text-rose-700 dark:text-rose-300 font-mono tracking-tight">
             {data.urgentCount}
           </div>
-          <p className="text-[10px] text-red-700/80 dark:text-red-400/80 mt-1 font-medium">Statutory deadlines</p>
+          <p className="text-[10px] text-rose-600/80 dark:text-rose-400/80 mt-1 font-semibold">Statutory deadlines</p>
         </div>
 
         {/* Awaiting Response */}
         <div
           onClick={() => navigate('/inbox?category=Client+Communication')}
-          className="p-3.5 rounded-lg border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121316] shadow-2xs hover:border-zinc-400 dark:hover:border-zinc-700 transition"
+          className="p-4 rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm hover:border-indigo-400 dark:hover:border-indigo-600 transition cursor-pointer"
         >
-          <div className="flex items-center justify-between text-zinc-500 mb-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Enquiries</span>
-            <Clock className="w-3.5 h-3.5 text-zinc-400" />
+          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Enquiries</span>
+            <Clock className="w-3.5 h-3.5 text-indigo-500" />
           </div>
-          <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">
             {data.responseRequiredCount}
           </div>
-          <p className="text-[10px] text-zinc-400 mt-1">Client responses</p>
+          <p className="text-[10px] text-slate-400 mt-1 font-medium">Client responses</p>
         </div>
 
         {/* Processing Reliability */}
-        <div className="p-3.5 rounded-lg border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121316] shadow-2xs">
-          <div className="flex items-center justify-between text-zinc-500 mb-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider">Parser Uptime</span>
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="p-4 rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm">
+          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Parser Uptime</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight">
+          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
             {data.successRate}%
           </div>
-          <p className="text-[10px] text-zinc-400 mt-1">Zero dropped events</p>
+          <p className="text-[10px] text-slate-400 mt-1 font-medium">Zero dropped events</p>
         </div>
       </div>
 
-      {/* Executive Briefing Section - Clean, editorial styling */}
-      <div className="rounded-lg border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121316] p-5 shadow-2xs">
-        <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-zinc-150 dark:border-zinc-800">
+      {/* Executive Briefing Section */}
+      <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] p-6 shadow-sm">
+        <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-zinc-900 dark:bg-zinc-100" />
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 shadow-[0_0_6px_rgba(99,102,241,0.6)]" />
+            <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
               Daily Practice Briefing
             </h2>
-            <span className="text-xs text-zinc-400">• Synthesized from active mailbox</span>
+            <span className="text-xs text-slate-400">• Synthesized from active mailbox</span>
           </div>
 
-          <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-850 text-zinc-600 dark:text-zinc-400 font-medium">
+          <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-500/20">
             {data.dailyBrief.importantCount} priority items
           </span>
         </div>
@@ -209,32 +209,32 @@ export const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Upcoming Deadlines */}
           <div className="space-y-2.5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-              <Calendar className="w-3 h-3 text-zinc-400" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-rose-500" />
               Statutory Deadlines
             </h3>
             {data.dailyBrief.upcomingDeadlines.length === 0 ? (
-              <p className="text-xs text-zinc-400 italic">No upcoming deadlines.</p>
+              <p className="text-xs text-slate-400 italic">No upcoming deadlines.</p>
             ) : (
               <div className="space-y-2">
                 {data.dailyBrief.upcomingDeadlines.map((item, idx) => (
                   <div
                     key={idx}
                     onClick={() => navigate(`/inbox?id=${item.emailId}`)}
-                    className="p-2.5 rounded-md bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 cursor-pointer transition text-xs"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer transition text-xs shadow-2xs"
                   >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-red-600 dark:text-red-400 font-mono text-[11px]">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-rose-600 dark:text-rose-400 font-mono text-[11px] flex items-center gap-1">
                         Due {item.dueDate}
                       </span>
                       <PriorityBadge priority={item.priority} size="sm" />
                     </div>
-                    <p className="text-zinc-800 dark:text-zinc-200 font-medium truncate">
+                    <p className="text-slate-800 dark:text-slate-200 font-semibold truncate">
                       {item.subject}
                     </p>
                     {item.company && (
-                      <span className="text-[11px] text-zinc-500 flex items-center gap-1 mt-1 truncate">
-                        <Building className="w-3 h-3 text-zinc-400" />
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-1 truncate">
+                        <Building className="w-3 h-3 text-slate-400" />
                         {item.company}
                       </span>
                     )}
@@ -246,29 +246,29 @@ export const Dashboard: React.FC = () => {
 
           {/* Pending Follow-ups */}
           <div className="space-y-2.5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-              <Clock className="w-3 h-3 text-zinc-400" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
               Active Follow-ups
             </h3>
             {data.dailyBrief.overdueFollowUps.length === 0 ? (
-              <p className="text-xs text-zinc-400 italic">No pending follow-ups.</p>
+              <p className="text-xs text-slate-400 italic">No pending follow-ups.</p>
             ) : (
               <div className="space-y-2">
                 {data.dailyBrief.overdueFollowUps.map((item, idx) => (
                   <div
                     key={idx}
                     onClick={() => navigate(`/inbox?id=${item.emailId}`)}
-                    className="p-2.5 rounded-md bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 cursor-pointer transition text-xs"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer transition text-xs shadow-2xs"
                   >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-zinc-800 dark:text-zinc-200 truncate">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
                         {item.sender}
                       </span>
-                      <span className="text-[10px] font-mono text-zinc-500">
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium">
                         {item.daysOverdue}d ago
                       </span>
                     </div>
-                    <p className="text-zinc-600 dark:text-zinc-400 font-medium truncate">
+                    <p className="text-slate-600 dark:text-slate-400 font-medium truncate">
                       {item.subject}
                     </p>
                   </div>
@@ -279,8 +279,8 @@ export const Dashboard: React.FC = () => {
 
           {/* Suggested Next Steps */}
           <div className="space-y-2.5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-              <Layers className="w-3 h-3 text-zinc-400" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-indigo-500" />
               Recommended Actions
             </h3>
             <div className="space-y-2">
@@ -288,13 +288,13 @@ export const Dashboard: React.FC = () => {
                 <div
                   key={item.id}
                   onClick={() => navigate(`/inbox?id=${item.emailId}`)}
-                  className="p-2.5 rounded-md bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 cursor-pointer transition text-xs"
+                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer transition text-xs shadow-2xs"
                 >
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1.5">
                     <CategoryBadge category={item.category} size="sm" />
                     <PriorityBadge priority={item.priority} size="sm" />
                   </div>
-                  <p className="text-zinc-800 dark:text-zinc-200 font-medium line-clamp-2 mt-1">
+                  <p className="text-slate-800 dark:text-slate-200 font-medium line-clamp-2 mt-1">
                     {item.actionText}
                   </p>
                 </div>
@@ -307,23 +307,23 @@ export const Dashboard: React.FC = () => {
       {/* Visual Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Email Volume Chart */}
-        <div className="lg:col-span-2 p-5 rounded-lg border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121316] shadow-2xs">
+        <div className="lg:col-span-2 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 Inbound Message Ingestion
               </h3>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-slate-400">
                 Total received vs. action-flagged volume (7-day window)
               </p>
             </div>
             <div className="flex items-center gap-3 text-xs font-mono">
-              <span className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
-                <span className="w-2 h-2 rounded-full bg-zinc-900 dark:bg-zinc-100" />
+              <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_6px_rgba(99,102,241,0.6)]" />
                 Total
               </span>
-              <span className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
-                <span className="w-2 h-2 rounded-full bg-red-600" />
+              <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.6)]" />
                 Action Required
               </span>
             </div>
@@ -334,40 +334,41 @@ export const Dashboard: React.FC = () => {
               <AreaChart data={data.charts.volumeOverTime} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="totalGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop stopColor="#71717a" stopOpacity={0.15} />
-                    <stop stopColor="#71717a" stopOpacity={0.0} />
+                    <stop stopColor="#6366f1" stopOpacity={0.25} />
+                    <stop stopColor="#6366f1" stopOpacity={0.0} />
                   </linearGradient>
                   <linearGradient id="actionGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop stopColor="#dc2626" stopOpacity={0.2} />
-                    <stop stopColor="#dc2626" stopOpacity={0.0} />
+                    <stop stopColor="#f43f5e" stopOpacity={0.25} />
+                    <stop stopColor="#f43f5e" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="date" stroke="#71717a" fontSize={11} tickLine={false} />
-                <YAxis stroke="#71717a" fontSize={11} tickLine={false} />
+                <XAxis dataKey="date" stroke="#64748b" fontSize={11} tickLine={false} />
+                <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#18181b',
-                    borderColor: '#27272a',
-                    borderRadius: '0.375rem',
-                    color: '#f4f4f5',
+                    backgroundColor: '#0E1524',
+                    borderColor: '#1e293b',
+                    borderRadius: '0.75rem',
+                    color: '#f8fafc',
                     fontSize: '11px',
-                    fontFamily: 'Geist Mono, monospace',
+                    fontFamily: 'monospace',
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
                   }}
                 />
-                <Area type="monotone" dataKey="count" stroke="#52525b" strokeWidth={2} fill="url(#totalGrad)" />
-                <Area type="monotone" dataKey="actionRequired" stroke="#dc2626" strokeWidth={1.5} fill="url(#actionGrad)" />
+                <Area type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={2.5} fill="url(#totalGrad)" />
+                <Area type="monotone" dataKey="actionRequired" stroke="#f43f5e" strokeWidth={2} fill="url(#actionGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Category Breakdown */}
-        <div className="p-5 rounded-lg border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121316] shadow-2xs flex flex-col justify-between">
+        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
               Classification Breakdown
             </h3>
-            <p className="text-xs text-zinc-500 mb-2">
+            <p className="text-xs text-slate-400 mb-2">
               Distribution across standard practice categories
             </p>
 
@@ -387,11 +388,13 @@ export const Dashboard: React.FC = () => {
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#18181b',
-                      borderColor: '#27272a',
-                      borderRadius: '0.375rem',
-                      color: '#f4f4f5',
+                      backgroundColor: '#0E1524',
+                      borderColor: '#1e293b',
+                      borderRadius: '0.75rem',
+                      color: '#f8fafc',
                       fontSize: '11px',
+                      fontFamily: 'monospace',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
                     }}
                   />
                 </PieChart>
@@ -399,11 +402,11 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-1.5 pt-3 border-t border-zinc-150 dark:border-zinc-800 text-[11px]">
+          <div className="grid grid-cols-2 gap-1.5 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px]">
             {data.charts.categoryBreakdown.slice(0, 4).map((c, i) => (
-              <div key={i} className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
+              <div key={i} className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                 <span className="truncate pr-2">{c.name}</span>
-                <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">{c.value}</span>
+                <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">{c.value}</span>
               </div>
             ))}
           </div>
@@ -413,51 +416,51 @@ export const Dashboard: React.FC = () => {
       {/* Recent Inflow & Engine State */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Recent Inflow List */}
-        <div className="lg:col-span-2 p-5 rounded-lg border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121316] shadow-2xs">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-150 dark:border-zinc-800">
+        <div className="lg:col-span-2 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm">
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 Recent Inbound Messages
               </h3>
-              <p className="text-xs text-zinc-500">Live feed from target mailbox</p>
+              <p className="text-xs text-slate-400">Live feed from target mailbox</p>
             </div>
             <button
               onClick={() => navigate('/inbox')}
-              className="text-xs font-medium text-zinc-900 dark:text-zinc-200 hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 flex items-center gap-1 transition"
             >
-              View all <ArrowRight className="w-3 h-3" />
+              View all <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-850">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
             {data.recentEmails.map((email) => (
               <div
                 key={email.internal_id}
                 onClick={() => navigate(`/inbox?id=${email.internal_id}`)}
-                className="py-2.5 flex items-start justify-between gap-3 hover:bg-zinc-50/80 dark:hover:bg-zinc-850/40 px-2 -mx-2 rounded cursor-pointer transition"
+                className="py-3 flex items-start justify-between gap-3 hover:bg-slate-50/80 dark:hover:bg-slate-900/60 px-3 -mx-2 rounded-xl cursor-pointer transition"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-semibold text-xs text-zinc-900 dark:text-zinc-100 truncate">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate">
                       {email.sender_name}
                     </span>
-                    <span className="text-[11px] text-zinc-400">•</span>
-                    <span className="text-[10px] font-mono text-zinc-400">{formatRelativeTime(email.received_at)}</span>
+                    <span className="text-[11px] text-slate-400">•</span>
+                    <span className="text-[10px] font-mono text-slate-400">{formatRelativeTime(email.received_at)}</span>
                     <PriorityBadge priority={email.triage.priority} size="sm" />
                   </div>
-                  <p className="text-xs font-medium text-zinc-800 dark:text-zinc-300 truncate">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
                     {email.subject}
                   </p>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
                     {email.triage.summary}
                   </p>
                 </div>
 
-                <div className="flex flex-col items-end gap-1 shrink-0">
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
                   <CategoryBadge category={email.triage.category} size="sm" />
                   {email.has_attachments && (
-                    <span className="text-[10px] text-zinc-400 flex items-center gap-0.5 font-mono">
-                      <FileText className="w-3 h-3 text-zinc-400" />
+                    <span className="text-[10px] text-slate-400 flex items-center gap-1 font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                      <FileText className="w-3 h-3 text-indigo-400" />
                       {email.attachments.length} att.
                     </span>
                   )}
@@ -468,44 +471,47 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Engine Pipeline Diagnostics */}
-        <div className="p-5 rounded-lg border border-zinc-200/90 dark:border-zinc-800/90 bg-white dark:bg-[#121316] shadow-2xs flex flex-col justify-between">
+        <div className="p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#111726] shadow-sm flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-3 pb-2 border-b border-zinc-150 dark:border-zinc-800">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 Sync Pipeline
               </h3>
-              <span className="flex items-center gap-1 text-[10px] font-mono font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              <span className="flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                 <CheckCircle2 className="w-3 h-3" />
                 Active
               </span>
             </div>
 
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-850">
-                <span className="text-zinc-500">Target Mailbox</span>
-                <span className="font-mono text-zinc-800 dark:text-zinc-200 truncate max-w-[140px] text-[11px]">
-                  triage@yourpractice.com.au
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800/60">
+                <span className="text-slate-400">Target Mailbox</span>
+                <span className="font-mono text-slate-800 dark:text-slate-200 truncate max-w-[170px] text-[11px] font-medium">
+                  ibex.triage@aoscaustralia.com
                 </span>
               </div>
-              <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-850">
-                <span className="text-zinc-500">Delta Token State</span>
-                <span className="font-mono text-emerald-600 dark:text-emerald-400 text-[11px]">Synchronized</span>
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800/60">
+                <span className="text-slate-400">Delta Token State</span>
+                <span className="font-mono text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Synchronized
+                </span>
               </div>
-              <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-850">
-                <span className="text-zinc-500">Queue Driver</span>
-                <span className="font-mono text-zinc-800 dark:text-zinc-200 text-[11px]">Celery + Redis</span>
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800/60">
+                <span className="text-slate-400">Queue Driver</span>
+                <span className="font-mono text-slate-800 dark:text-slate-200 text-[11px] font-medium">Celery + Redis</span>
               </div>
-              <div className="flex items-center justify-between py-1.5">
-                <span className="text-zinc-500">Graph Webhooks</span>
-                <span className="font-mono text-zinc-800 dark:text-zinc-200 text-[11px]">Handshake Verified</span>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-slate-400">Graph Webhooks</span>
+                <span className="font-mono text-indigo-600 dark:text-indigo-400 text-[11px] font-medium">Handshake Verified</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-zinc-150 dark:border-zinc-800">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
             <button
               onClick={() => navigate('/settings')}
-              className="w-full py-1.5 px-3 text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-850 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition text-center"
+              className="w-full py-2 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition text-center cursor-pointer"
             >
               Manage Integrations & Settings
             </button>

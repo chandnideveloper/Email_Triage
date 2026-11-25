@@ -42,6 +42,10 @@ class EmailRepository:
         with self._SHARED_LOCK:
             try:
                 data = json.loads(self.storage_file.read_text(encoding="utf-8"))
+                self._SHARED_EMAILS.clear()
+                self._SHARED_GRAPH_ID_INDEX.clear()
+                self._SHARED_SYNC_STATES.clear()
+                self._SHARED_SUBSCRIPTIONS.clear()
                 for email_data in data.get("emails", []):
                     rec = EmailRecord.from_dict(email_data)
                     self._SHARED_EMAILS[rec.internal_id] = rec

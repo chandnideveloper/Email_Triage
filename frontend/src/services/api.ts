@@ -13,23 +13,21 @@ import { INITIAL_MOCK_EMAILS } from './mockData';
 const API_BASE = '/api/triage';
 
 // Local storage key for persistent client updates
-const STORAGE_KEY = 'triageai_emails_v1';
+const STORAGE_KEY = 'triageai_emails_v3';
 
 function getStoredEmails(): EmailRecord[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         return parsed;
       }
     }
   } catch (err) {
     console.warn('Error reading from localStorage:', err);
   }
-  // Default to initial mock emails
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_MOCK_EMAILS));
-  return INITIAL_MOCK_EMAILS;
+  return [];
 }
 
 function saveStoredEmails(emails: EmailRecord[]): void {
@@ -53,58 +51,76 @@ export const api = {
 
   // Fetch emails with client and backend support
   async getEmails(filters?: Partial<EmailFilterState>): Promise<EmailListResponse> {
-    try {
-      const params = new URLSearchParams();
-      if (filters?.category && filters.category !== 'all') params.append('category', filters.category);
-      if (filters?.priority && filters.priority !== 'all') params.append('priority', filters.priority);
-      if (filters?.status && filters.status !== 'all') params.append('status', filters.status);
+    let rawEmails: EmailRecord[] = [];
+    let isLiveBackend = false;
 
-      const res = await fetch(`${API_BASE}/emails?${params.toString()}`);
+    try {
+      const res = await fetch(`${API_BASE}/emails?limit=100`);
       if (res.ok) {
         const data = await res.json();
-        if (data.items && data.items.length > 0) {
-          return data;
+        if (data.items && Array.isArray(data.items) && data.items.length > 0) {
+          rawEmails = data.items;
+          isLiveBackend = true;
+          // Synchronize to local storage for offline continuity
+          saveStoredEmails(rawEmails);
         }
       }
     } catch {
-      // Fallback to local store
+      // Backend unavailable
     }
 
-    // Client-side filtering on stored emails
-    let emails = getStoredEmails();
+    // Only if backend is completely empty or offline, use stored emails
+    if (!isLiveBackend || rawEmails.length === 0) {
+      rawEmails = getStoredEmails();
+    }
 
-    if (filters?.search) {
-      const q = filters.search.toLowerCase();
+    let emails = [...rawEmails];
+
+    // Search query filter
+    if (filters?.search && filters.search.trim()) {
+      const q = filters.search.trim().toLowerCase();
       emails = emails.filter(
         (e) =>
-          e.subject.toLowerCase().includes(q) ||
-          e.sender_name.toLowerCase().includes(q) ||
-          e.sender_email.toLowerCase().includes(q) ||
-          e.triage.summary.toLowerCase().includes(q) ||
-          (e.triage.entities.companies || []).some((c: string) => c.toLowerCase().includes(q))
+          e.subject?.toLowerCase().includes(q) ||
+          e.sender_name?.toLowerCase().includes(q) ||
+          e.sender_email?.toLowerCase().includes(q) ||
+          e.body_plain?.toLowerCase().includes(q) ||
+          e.triage?.summary?.toLowerCase().includes(q) ||
+          (e.triage?.entities?.companies || []).some((c: string) => c.toLowerCase().includes(q)) ||
+          (e.triage?.entities?.amounts || []).some((a: string) => a.toLowerCase().includes(q))
       );
     }
 
+    // Category filter
     if (filters?.category && filters.category !== 'all') {
-      emails = emails.filter((e) => e.triage.category === filters.category);
+      emails = emails.filter((e) => e.triage?.category === filters.category);
     }
 
+    // Priority filter
     if (filters?.priority && filters.priority !== 'all') {
-      emails = emails.filter((e) => e.triage.priority === filters.priority);
+      emails = emails.filter((e) => e.triage?.priority === filters.priority);
     }
 
+    // Read State filter
     if (filters?.readFilter === 'unread') {
       emails = emails.filter((e) => !e.is_read);
     } else if (filters?.readFilter === 'read') {
       emails = emails.filter((e) => e.is_read);
     }
 
+    // Action Required filter
     if (filters?.actionRequired !== null && filters?.actionRequired !== undefined) {
-      emails = emails.filter((e) => e.triage.action_required === filters.actionRequired);
+      emails = emails.filter((e) => e.triage?.action_required === filters.actionRequired);
     }
 
+    // Attachments filter
     if (filters?.hasAttachments !== null && filters?.hasAttachments !== undefined) {
       emails = emails.filter((e) => e.has_attachments === filters.hasAttachments);
+    }
+
+    // Status filter
+    if (filters?.status && filters.status !== 'all') {
+      emails = emails.filter((e) => e.processing_status === filters.status);
     }
 
     // Sorting
@@ -112,15 +128,15 @@ export const api = {
       emails.sort((a, b) => new Date(a.received_at).getTime() - new Date(b.received_at).getTime());
     } else if (filters?.sortBy === 'priority') {
       const pMap: Record<string, number> = { Critical: 4, High: 3, Medium: 2, Low: 1 };
-      emails.sort((a, b) => (pMap[b.triage.priority] || 0) - (pMap[a.triage.priority] || 0));
+      emails.sort((a, b) => (pMap[b.triage?.priority || 'Low'] || 0) - (pMap[a.triage?.priority || 'Low'] || 0));
     } else {
-      // newest default
+      // Default: newest first
       emails.sort((a, b) => new Date(b.received_at).getTime() - new Date(a.received_at).getTime());
     }
 
     return {
       count: emails.length,
-      total: getStoredEmails().length,
+      total: rawEmails.length,
       limit: 50,
       offset: 0,
       items: emails,
@@ -157,6 +173,7 @@ export const api = {
       return e;
     });
     saveStoredEmails(updated);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('triage_updated'));
   },
 
   // Mark completed / triaged
@@ -180,6 +197,7 @@ export const api = {
       return e;
     });
     saveStoredEmails(updated);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('triage_updated'));
   },
 
   // Update Category
@@ -197,6 +215,7 @@ export const api = {
       return e;
     });
     saveStoredEmails(updated);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('triage_updated'));
   },
 
   // Trigger sync
@@ -206,22 +225,35 @@ export const api = {
         method: 'POST',
       });
       if (res.ok) {
-        return await res.json();
+        const data = await res.json();
+        await new Promise((r) => setTimeout(r, 1200));
+        window.dispatchEvent(new Event('triage_updated'));
+        return data;
       }
     } catch {
       // Fallback
     }
 
-    // Simulate sync
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 1000));
+    window.dispatchEvent(new Event('triage_updated'));
     return {
       status: 'COMPLETED',
       result: {
         synced_at: new Date().toISOString(),
-        new_messages: 2,
-        processed: 2,
       },
     };
+  },
+
+  // Download attachment
+  downloadAttachment(emailId: string, attachmentId: string, filename: string): void {
+    const url = `${API_BASE}/emails/${encodeURIComponent(emailId || 'all')}/attachments/${encodeURIComponent(attachmentId || filename)}/download`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   },
 
   // Get Sync status
@@ -260,7 +292,8 @@ export const api = {
 
   // Dashboard Aggregations
   async getDashboardMetrics(): Promise<DashboardMetrics> {
-    const emails = getStoredEmails();
+    const listRes = await this.getEmails();
+    const emails = listRes.items;
 
     const totalProcessed = emails.length;
     const unreadCount = emails.filter((e) => !e.is_read).length;
@@ -388,7 +421,13 @@ export const api = {
       }
     >
   > {
-    const emails = getStoredEmails();
+    let emails: EmailRecord[] = [];
+    try {
+      const emailRes = await this.getEmails({});
+      emails = emailRes.items;
+    } catch {
+      emails = getStoredEmails();
+    }
     const result: Array<
       AttachmentMetadata & {
         parentSubject: string;
@@ -402,6 +441,7 @@ export const api = {
         email.attachments.forEach((att) => {
           result.push({
             ...att,
+            email_internal_id: att.email_internal_id || email.internal_id,
             parentSubject: email.subject,
             parentSender: email.sender_name,
             receivedAt: email.received_at,
