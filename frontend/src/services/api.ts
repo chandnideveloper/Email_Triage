@@ -6,6 +6,7 @@ import {
   EmailListResponse,
   EmailRecord,
   Priority,
+  ProcessingStatus,
   SyncStatus,
 } from '@/types';
 import { INITIAL_MOCK_EMAILS } from './mockData';
@@ -75,7 +76,10 @@ export const api = {
       if (res.ok) {
         const data = await res.json();
         if (data.items && Array.isArray(data.items) && data.items.length > 0) {
-          rawEmails = data.items;
+          rawEmails = data.items.map((item: any) => ({
+            ...item,
+            is_read: Boolean(item.is_read),
+          }));
           isLiveBackend = true;
           // Synchronize to local storage for offline continuity
           saveStoredEmails(rawEmails);
@@ -90,7 +94,10 @@ export const api = {
       rawEmails = getStoredEmails();
     }
 
-    rawEmails = deduplicateEmails(rawEmails);
+    rawEmails = deduplicateEmails(rawEmails).map((item) => ({
+      ...item,
+      is_read: Boolean(item.is_read),
+    }));
     let emails = [...rawEmails];
 
     // Search query filter
@@ -180,7 +187,7 @@ export const api = {
   },
 
   // Toggle read status
-  async markRead(emailIds: string[], isRead: boolean): Promise<void> {
+  async markRead(emailIds: string[], isRead: boolean, silent = false): Promise<void> {
     const emails = getStoredEmails();
     const idSet = new Set(emailIds);
     const updated = emails.map((e) => {
@@ -190,7 +197,9 @@ export const api = {
       return e;
     });
     saveStoredEmails(updated);
-    if (typeof window !== 'undefined') window.dispatchEvent(new Event('triage_updated'));
+    if (!silent && typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('triage_updated'));
+    }
 
     try {
       await fetch(`${API_BASE}/emails/batch`, {
@@ -309,6 +318,37 @@ export const api = {
       });
     } catch (err) {
       console.warn('Backend updatePriority failed, persisted locally:', err);
+    }
+  },
+
+  // Update Status
+  async updateStatus(emailIds: string[], newStatus: ProcessingStatus): Promise<void> {
+    const emails = getStoredEmails();
+    const idSet = new Set(emailIds);
+    const updated = emails.map((e) => {
+      if (idSet.has(e.internal_id)) {
+        return {
+          ...e,
+          processing_status: newStatus,
+          updated_at: new Date().toISOString(),
+        };
+      }
+      return e;
+    });
+    saveStoredEmails(updated);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('triage_updated'));
+
+    try {
+      await fetch(`${API_BASE}/emails/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email_ids: emailIds,
+          updates: { processing_status: newStatus },
+        }),
+      });
+    } catch (err) {
+      console.warn('Backend updateStatus failed, persisted locally:', err);
     }
   },
 
@@ -557,6 +597,7 @@ export const api = {
       AttachmentMetadata & {
         parentSubject: string;
         parentSender: string;
+        senderEmail?: string;
         receivedAt: string;
       }
     >
@@ -572,6 +613,7 @@ export const api = {
       AttachmentMetadata & {
         parentSubject: string;
         parentSender: string;
+        senderEmail?: string;
         receivedAt: string;
       }
     > = [];
@@ -583,7 +625,8 @@ export const api = {
             ...att,
             email_internal_id: att.email_internal_id || email.internal_id,
             parentSubject: email.subject,
-            parentSender: email.sender_name,
+            parentSender: email.sender_name || email.sender_email || 'Client',
+            senderEmail: email.sender_email,
             receivedAt: email.received_at,
           });
         });

@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Inbox,
   FileText,
-  BarChart3,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -62,12 +61,6 @@ export const Sidebar: React.FC = () => {
       to: '/documents',
       label: 'Documents',
       icon: FileText,
-      badge: null,
-    },
-    {
-      to: '/analytics',
-      label: 'Analytics',
-      icon: BarChart3,
       badge: null,
     },
     {

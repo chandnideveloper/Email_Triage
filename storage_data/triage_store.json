@@ -462,7 +462,7 @@
       "body_plain": "i will check the doc\nOn Tue, 24 Nov 2026 at 10:26, Chandni Poddar < poddarchandni5@gmail.com > wrote:\nHi Team,\nPlease find attached our tax invoice for $12,500.00 AUD (including $1,136.36 GST) for Acme Holdings Pty Ltd.\nPayment is due by 30 November. Could you please reconcile and confirm receipt?",
       "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">i will check the doc<div><br></div></div><br><div class=\"gmail_quote gmail_quote_container\"><div dir=\"ltr\" class=\"gmail_attr\">On Tue, 24 Nov 2026 at 10:26, Chandni Poddar &lt;<a href=\"mailto:poddarchandni5@gmail.com\">poddarchandni5@gmail.com</a>&gt; wrote:<br></div><blockquote class=\"gmail_quote\" style=\"margin:0px 0px 0px 0.8ex; border-left:1px solid rgb(204,204,204); padding-left:1ex\"><div dir=\"ltr\"><span>Hi </span><span>Team,</span><span><br></span><span></span><span></span><span>Please </span><span>find </span><span>attached </span><span>our </span><span>tax </span><span>invoice </span><span>for </span><span>$12,500.00 </span><span>AUD </span><span>(including </span><span>$1,136.36 </span><span>GST) </span><span>for </span><span>Acme </span><span>Holdings </span><span>Pty </span><span>Ltd.</span><span><br></span><span></span><span></span><span>Payment </span><span>is </span><span>due </span><span>by </span><span>30 </span><span>November. </span><span>Could </span><span>you </span><span>please </span><span>reconcile </span><span>and </span><span>confirm </span><span>receipt?</span></div></blockquote></div></body></html>",
       "received_at": "2026-11-24T08:05:44Z",
-      "is_read": false,
+      "is_read": true,
       "has_attachments": false,
       "attachments": [],
       "triage": {
@@ -555,7 +555,7 @@
       "body_plain": "Hello Team, please find our invoice attached.",
       "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><code dir=\"ltr\">Hello Team, please find our invoice attached.</code></div></body></html>",
       "received_at": "2026-11-25T06:05:50Z",
-      "is_read": false,
+      "is_read": true,
       "has_attachments": false,
       "attachments": [],
       "triage": {
@@ -638,7 +638,7 @@
       "body_plain": "Dear Accounts Team,\nWe have an outstanding invoice of AUD 5,000 that is due today. Please process the payment as soon as possible. I have attached the invoice for your reference.\nRegards,\nABC Company",
       "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><p>Dear Accounts Team,</p><p>We have an outstanding invoice of AUD 5,000 that is due today. Please process the payment as soon as possible. I have attached the invoice for your reference.</p><p>Regards,</p><p>ABC Company</p></div></body></html>",
       "received_at": "2026-11-25T06:07:43Z",
-      "is_read": false,
+      "is_read": true,
       "has_attachments": false,
       "attachments": [],
       "triage": {
@@ -728,7 +728,7 @@
       "body_plain": "Hello Team, please find our invoice attached.",
       "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><code dir=\"ltr\">Hello Team, please find our invoice attached.</code></div></body></html>",
       "received_at": "2026-11-25T06:16:19Z",
-      "is_read": false,
+      "is_read": true,
       "has_attachments": false,
       "attachments": [],
       "triage": {
@@ -812,7 +812,7 @@
       "body_plain": "Hello Team, please find our invoice attached.",
       "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><code dir=\"ltr\">Hello Team, please find our invoice attached.</code></div></body></html>",
       "received_at": "2026-11-25T06:36:35Z",
-      "is_read": false,
+      "is_read": true,
       "has_attachments": true,
       "attachments": [
         {
@@ -999,7 +999,7 @@
       "body_plain": "ryyhtujtgnfvbfbfvdsfdddgfbfgbfdvdfdgfdb\namount 455555",
       "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">ryyhtujtgnfvbfbfvdsfdddgfbfgbfdvdfdgfdb&nbsp;<br>amount 455555</div></body></html>",
       "received_at": "2026-11-25T08:09:32Z",
-      "is_read": false,
+      "is_read": true,
       "has_attachments": false,
       "attachments": [],
       "triage": {
@@ -1045,7 +1045,7 @@
       "body_plain": "Hello Team, please find our invoice attached.",
       "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><code dir=\"ltr\">Hello Team, please find our invoice attached.</code></div></body></html>",
       "received_at": "2026-11-25T08:45:34Z",
-      "is_read": false,
+      "is_read": true,
       "has_attachments": false,
       "attachments": [],
       "triage": {
@@ -1132,7 +1132,7 @@
       "body_plain": "Dear Accounts Team,\nPlease find attached the sample monthly accounting statement for November 2026.\nThe document contains financial transactions, levy collections, outstanding payments, operating expenses, and account balances.\nKindly review the attached document and verify the accounting details.\nThis email and its attachment are intended for system testing purposes only.\nBest regards,\nFinance Department",
       "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><p>Dear Accounts Team,</p><p>Please find attached the sample monthly accounting statement for November 2026.</p><p>The document contains financial transactions, levy collections, outstanding payments, operating expenses, and account balances.</p><p>Kindly review the attached document and verify the accounting details.</p><p>This email and its attachment are intended for system testing purposes only.</p><p>Best regards,<br>Finance Department</p></div></body></html>",
       "received_at": "2026-11-25T08:53:09Z",
-      "is_read": false,
+      "is_read": true,
       "has_attachments": true,
       "attachments": [
         {
@@ -1257,7 +1257,7 @@
       "body_plain": "hello",
       "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">hello</div></body></html>",
       "received_at": "2026-11-25T09:04:11Z",
-      "is_read": false,
+      "is_read": true,
       "has_attachments": false,
       "attachments": [],
       "triage": {
@@ -1341,7 +1341,7 @@
       "body_plain": "hello",
       "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">hello&nbsp;</div></body></html>",
       "received_at": "2026-11-25T10:04:29Z",
-      "is_read": false,
+      "is_read": true,
       "has_attachments": true,
       "attachments": [
         {
@@ -1524,6 +1524,823 @@
       "retry_count": 0,
       "created_at": "2026-11-25T10:04:33.273426+00:00",
       "updated_at": "2026-11-25T10:04:33.273438+00:00"
+    },
+    {
+      "internal_id": "66dd4060298d4ffa9d5280d3e0143faa",
+      "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAv5P7AAA=",
+      "internet_message_id": "<CAFjUDf45YLHofRwZO_9xmAi9YmiJQ+G8o3seCqn8DoK4WZwnhg@mail.gmail.com>",
+      "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQAOg0AkGqSXBFuY_DbJOjSKE=",
+      "sender_name": "Chandni Poddar",
+      "sender_email": "poddarchandni5@gmail.com",
+      "recipients": [
+        {
+          "name": "IBEX Mailbox Triage",
+          "email": "ibex.triage@aoscaustralia.com"
+        }
+      ],
+      "cc": [],
+      "bcc": [],
+      "subject": "image Invoice",
+      "body_plain": "hello\ncheck the doc below",
+      "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">hello&nbsp;<br>check the doc below</div></body></html>",
+      "received_at": "2026-11-26T01:59:03Z",
+      "is_read": true,
+      "has_attachments": true,
+      "attachments": [
+        {
+          "id": "ebc87dc7d59a4b7eb39d9a18051ba81c",
+          "graph_attachment_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAv5P7AAABEgAQAOe4Vjep4EZGlSvAeHkI6fI=",
+          "email_internal_id": "66dd4060298d4ffa9d5280d3e0143faa",
+          "filename": "invoice.png",
+          "content_type": "image/png",
+          "size_bytes": 107048,
+          "sha256": "5006f8b2ae4d6d71fcb4d2eddf5bbff875cd91ae2443ede8d6e29e0368e87d2a",
+          "is_inline": false,
+          "storage_path": "C:\\Users\\ayush\\OneDrive\\Desktop\\IBEX_core\\Email_Triage\\storage_data\\attachments\\50\\5006f8b2ae4d6d71fcb4d2eddf5bbff875cd91ae2443ede8d6e29e0368e87d2a.png",
+          "downloaded_at": "",
+          "ibex_compatible_payload": {
+            "schema_version": "1.0",
+            "document_id": "DOC-UNTITLED",
+            "message_id": "66dd4060298d4ffa9d5280d3e0143faa",
+            "client": {
+              "client_id": null,
+              "entity_id": null,
+              "group_id": null,
+              "client_name": null,
+              "confidence": 0.0,
+              "match_basis": "unmatched",
+              "matched_value": null
+            },
+            "classification": {
+              "document_type": "supplier_invoice",
+              "subtype": null,
+              "confidence": 0.85,
+              "top_predictions": [
+                {
+                  "document_type": "supplier_invoice",
+                  "subtype": null,
+                  "confidence": 0.85
+                },
+                {
+                  "document_type": "signed_return",
+                  "subtype": null,
+                  "confidence": 0.07
+                },
+                {
+                  "document_type": "platform_statement",
+                  "subtype": null,
+                  "confidence": 0.07
+                }
+              ]
+            },
+            "intent": {
+              "type": "document_delivery",
+              "confidence": 0.55
+            },
+            "extracted_fields": {
+              "supplier_name": "hello",
+              "abn": null,
+              "reference": null,
+              "document_date": null,
+              "due_date": null,
+              "period_start": null,
+              "period_end": null,
+              "financial_year": null,
+              "amount_total": null,
+              "subtotal": null,
+              "gst": null,
+              "bank_details": null
+            },
+            "sensitivity": "normal",
+            "sensitivity_reasons": [],
+            "duplicate_of": null,
+            "suggested_job_ref": null,
+            "job_conf": 0.0,
+            "status": "needs_review",
+            "review_reasons": [
+              "Client confidence (0.00) below threshold (0.95)"
+            ],
+            "extracted_text": ""
+          }
+        }
+      ],
+      "triage": {
+        "category": "Invoice / Finance",
+        "priority": "High",
+        "confidence": 0.85,
+        "action_required": false,
+        "response_required": false,
+        "follow_up_required": false,
+        "suggested_action": "Verify invoice details, check ABN and match with accounting records.",
+        "due_date": null,
+        "summary": "hello\ncheck the doc below",
+        "key_points": [
+          "Includes attachment(s): invoice.png"
+        ],
+        "entities": {
+          "ai_classification": {
+            "document_type": "supplier_invoice",
+            "platform_subtype": null,
+            "confidence": 0.85,
+            "status": "needs_review",
+            "client": {
+              "client_id": null,
+              "entity_id": null,
+              "group_id": null,
+              "client_name": null,
+              "confidence": 0.0,
+              "match_basis": "unmatched",
+              "matched_value": null
+            },
+            "extracted_fields": {
+              "supplier_name": "hello",
+              "abn": null,
+              "reference": null,
+              "document_date": null,
+              "due_date": null,
+              "period_start": null,
+              "period_end": null,
+              "financial_year": null,
+              "amount_total": null,
+              "subtotal": null,
+              "gst": null,
+              "bank_details": null
+            },
+            "sensitivity": "normal",
+            "suggested_job_ref": null,
+            "review_reasons": [
+              "Client confidence (0.00) below threshold (0.95)"
+            ]
+          },
+          "supplier_name": "hello",
+          "companies": [
+            "hello"
+          ],
+          "attachment_source": "invoice.png",
+          "sender_name": "Chandni Poddar"
+        },
+        "triaged_at": "2026-11-26T02:01:42.487305+00:00"
+      },
+      "processing_status": "TRIAGED",
+      "error_message": "",
+      "retry_count": 0,
+      "created_at": "2026-11-26T02:01:32.737423+00:00",
+      "updated_at": "2026-11-26T02:01:32.737436+00:00"
+    },
+    {
+      "internal_id": "4bcab15c88df41a8a2a69b04b6bb37cc",
+      "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAv5P8AAA=",
+      "internet_message_id": "<CAFjUDf5KecoyoMo+bBFOGfnHvGkiqkmuRWsOf15xt1C7gsLHgw@mail.gmail.com>",
+      "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQAFJIsTnCPiNJi9KLyUmek7Y=",
+      "sender_name": "Chandni Poddar",
+      "sender_email": "poddarchandni5@gmail.com",
+      "recipients": [
+        {
+          "name": "IBEX Mailbox Triage",
+          "email": "ibex.triage@aoscaustralia.com"
+        }
+      ],
+      "cc": [],
+      "bcc": [],
+      "subject": "image",
+      "body_plain": "hello",
+      "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">hello</div></body></html>",
+      "received_at": "2026-11-26T02:19:20Z",
+      "is_read": true,
+      "has_attachments": true,
+      "attachments": [
+        {
+          "id": "0d511ed04af44f77928ebf15e4026dca",
+          "graph_attachment_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAv5P8AAABEgAQAIhHgZ5Pp2BMuM3XrV9_5cc=",
+          "email_internal_id": "4bcab15c88df41a8a2a69b04b6bb37cc",
+          "filename": "invoice.png",
+          "content_type": "image/png",
+          "size_bytes": 107048,
+          "sha256": "5006f8b2ae4d6d71fcb4d2eddf5bbff875cd91ae2443ede8d6e29e0368e87d2a",
+          "is_inline": false,
+          "storage_path": "C:\\Users\\ayush\\OneDrive\\Desktop\\IBEX_core\\Email_Triage\\storage_data\\attachments\\50\\5006f8b2ae4d6d71fcb4d2eddf5bbff875cd91ae2443ede8d6e29e0368e87d2a.png",
+          "downloaded_at": "",
+          "ibex_compatible_payload": {
+            "schema_version": "1.0",
+            "document_id": "DOC-UNTITLED",
+            "message_id": "4bcab15c88df41a8a2a69b04b6bb37cc",
+            "client": {
+              "client_id": null,
+              "entity_id": null,
+              "group_id": null,
+              "client_name": null,
+              "confidence": 0.0,
+              "match_basis": "unmatched",
+              "matched_value": null
+            },
+            "classification": {
+              "document_type": "supplier_invoice",
+              "subtype": null,
+              "confidence": 0.9,
+              "top_predictions": [
+                {
+                  "document_type": "supplier_invoice",
+                  "subtype": null,
+                  "confidence": 0.9
+                },
+                {
+                  "document_type": "platform_statement",
+                  "subtype": null,
+                  "confidence": 0.06
+                },
+                {
+                  "document_type": "other",
+                  "subtype": null,
+                  "confidence": 0.06
+                }
+              ]
+            },
+            "intent": {
+              "type": "document_delivery",
+              "confidence": 0.55
+            },
+            "extracted_fields": {
+              "supplier_name": "hello",
+              "abn": null,
+              "reference": null,
+              "document_date": null,
+              "due_date": null,
+              "period_start": null,
+              "period_end": null,
+              "financial_year": null,
+              "amount_total": null,
+              "subtotal": null,
+              "gst": null,
+              "bank_details": null
+            },
+            "sensitivity": "normal",
+            "sensitivity_reasons": [],
+            "duplicate_of": null,
+            "suggested_job_ref": null,
+            "job_conf": 0.0,
+            "status": "needs_review",
+            "review_reasons": [
+              "Client confidence (0.00) below threshold (0.95)"
+            ],
+            "extracted_text": ""
+          }
+        }
+      ],
+      "triage": {
+        "category": "Invoice / Finance",
+        "priority": "High",
+        "confidence": 0.9,
+        "action_required": false,
+        "response_required": false,
+        "follow_up_required": false,
+        "suggested_action": "Verify invoice details, check ABN and match with accounting records.",
+        "due_date": null,
+        "summary": "hello",
+        "key_points": [
+          "Includes attachment(s): invoice.png"
+        ],
+        "entities": {
+          "ai_classification": {
+            "document_type": "supplier_invoice",
+            "platform_subtype": null,
+            "confidence": 0.9,
+            "status": "needs_review",
+            "client": {
+              "client_id": null,
+              "entity_id": null,
+              "group_id": null,
+              "client_name": null,
+              "confidence": 0.0,
+              "match_basis": "unmatched",
+              "matched_value": null
+            },
+            "extracted_fields": {
+              "supplier_name": "hello",
+              "abn": null,
+              "reference": null,
+              "document_date": null,
+              "due_date": null,
+              "period_start": null,
+              "period_end": null,
+              "financial_year": null,
+              "amount_total": null,
+              "subtotal": null,
+              "gst": null,
+              "bank_details": null
+            },
+            "sensitivity": "normal",
+            "suggested_job_ref": null,
+            "review_reasons": [
+              "Client confidence (0.00) below threshold (0.95)"
+            ]
+          },
+          "supplier_name": "hello",
+          "companies": [
+            "hello"
+          ],
+          "attachment_source": "invoice.png",
+          "sender_name": "Chandni Poddar"
+        },
+        "triaged_at": "2026-11-26T02:34:58.998214+00:00"
+      },
+      "processing_status": "TRIAGED",
+      "error_message": "",
+      "retry_count": 0,
+      "created_at": "2026-11-26T02:34:55.202468+00:00",
+      "updated_at": "2026-11-26T02:34:55.202478+00:00"
+    },
+    {
+      "internal_id": "6ca964dcba7b4f8e8c24c491babb54d3",
+      "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAv5P9AAA=",
+      "internet_message_id": "<CAFjUDf7cwwBqMOqVZuXc3rMuiPA6H71PTanKk0iUJGj6ZGmd5w@mail.gmail.com>",
+      "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQABAPC1w6QgpCpieT0geprhU=",
+      "sender_name": "Chandni Poddar",
+      "sender_email": "poddarchandni5@gmail.com",
+      "recipients": [
+        {
+          "name": "IBEX Mailbox Triage",
+          "email": "ibex.triage@aoscaustralia.com"
+        }
+      ],
+      "cc": [],
+      "bcc": [],
+      "subject": "hr department",
+      "body_plain": "hello",
+      "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">hello</div></body></html>",
+      "received_at": "2026-11-26T02:35:01Z",
+      "is_read": true,
+      "has_attachments": true,
+      "attachments": [
+        {
+          "id": "4d7470c185874218b3a1276b562be816",
+          "graph_attachment_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAv5P9AAABEgAQAHkhkgkGcg1Gp_zKyllWfTY=",
+          "email_internal_id": "6ca964dcba7b4f8e8c24c491babb54d3",
+          "filename": "invoice.png",
+          "content_type": "image/png",
+          "size_bytes": 107048,
+          "sha256": "5006f8b2ae4d6d71fcb4d2eddf5bbff875cd91ae2443ede8d6e29e0368e87d2a",
+          "is_inline": false,
+          "storage_path": "C:\\Users\\ayush\\OneDrive\\Desktop\\IBEX_core\\Email_Triage\\storage_data\\attachments\\50\\5006f8b2ae4d6d71fcb4d2eddf5bbff875cd91ae2443ede8d6e29e0368e87d2a.png",
+          "downloaded_at": "",
+          "ibex_compatible_payload": {
+            "schema_version": "1.0",
+            "document_id": "DOC-UNTITLED",
+            "message_id": "6ca964dcba7b4f8e8c24c491babb54d3",
+            "client": {
+              "client_id": null,
+              "entity_id": null,
+              "group_id": null,
+              "client_name": null,
+              "confidence": 0.0,
+              "match_basis": "unmatched",
+              "matched_value": null
+            },
+            "classification": {
+              "document_type": "supplier_invoice",
+              "subtype": null,
+              "confidence": 0.8,
+              "top_predictions": [
+                {
+                  "document_type": "supplier_invoice",
+                  "subtype": null,
+                  "confidence": 0.8
+                },
+                {
+                  "document_type": "id_document",
+                  "subtype": null,
+                  "confidence": 0.08
+                },
+                {
+                  "document_type": "platform_statement",
+                  "subtype": null,
+                  "confidence": 0.07
+                }
+              ]
+            },
+            "intent": {
+              "type": "document_delivery",
+              "confidence": 0.55
+            },
+            "extracted_fields": {
+              "supplier_name": "hello",
+              "abn": null,
+              "reference": null,
+              "document_date": null,
+              "due_date": null,
+              "period_start": null,
+              "period_end": null,
+              "financial_year": null,
+              "amount_total": null,
+              "subtotal": null,
+              "gst": null,
+              "bank_details": null
+            },
+            "sensitivity": "normal",
+            "sensitivity_reasons": [],
+            "duplicate_of": null,
+            "suggested_job_ref": null,
+            "job_conf": 0.0,
+            "status": "needs_review",
+            "review_reasons": [
+              "Client confidence (0.00) below threshold (0.95)",
+              "Document type confidence (0.80) below threshold (0.85)"
+            ],
+            "extracted_text": ""
+          }
+        }
+      ],
+      "triage": {
+        "category": "Invoice / Finance",
+        "priority": "High",
+        "confidence": 0.8,
+        "action_required": false,
+        "response_required": false,
+        "follow_up_required": false,
+        "suggested_action": "Verify invoice details, check ABN and match with accounting records.",
+        "due_date": null,
+        "summary": "hello",
+        "key_points": [
+          "Includes attachment(s): invoice.png"
+        ],
+        "entities": {
+          "ai_classification": {
+            "document_type": "supplier_invoice",
+            "platform_subtype": null,
+            "confidence": 0.8,
+            "status": "needs_review",
+            "client": {
+              "client_id": null,
+              "entity_id": null,
+              "group_id": null,
+              "client_name": null,
+              "confidence": 0.0,
+              "match_basis": "unmatched",
+              "matched_value": null
+            },
+            "extracted_fields": {
+              "supplier_name": "hello",
+              "abn": null,
+              "reference": null,
+              "document_date": null,
+              "due_date": null,
+              "period_start": null,
+              "period_end": null,
+              "financial_year": null,
+              "amount_total": null,
+              "subtotal": null,
+              "gst": null,
+              "bank_details": null
+            },
+            "sensitivity": "normal",
+            "suggested_job_ref": null,
+            "review_reasons": [
+              "Client confidence (0.00) below threshold (0.95)",
+              "Document type confidence (0.80) below threshold (0.85)"
+            ]
+          },
+          "supplier_name": "hello",
+          "companies": [
+            "hello"
+          ],
+          "attachment_source": "invoice.png",
+          "sender_name": "Chandni Poddar"
+        },
+        "triaged_at": "2026-11-26T02:35:08.850002+00:00"
+      },
+      "processing_status": "TRIAGED",
+      "error_message": "",
+      "retry_count": 0,
+      "created_at": "2026-11-26T02:35:04.806150+00:00",
+      "updated_at": "2026-11-26T02:35:04.806158+00:00"
+    },
+    {
+      "internal_id": "82a5a612a1fc4ea8ab805dac6c1384e0",
+      "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAv5P_AAA=",
+      "internet_message_id": "<CAFXFHpPG5itGAgEk2tPnFXtAw19v=x7UvRDpsAB42UmJtLH5zQ@mail.gmail.com>",
+      "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQAJzqRc73dMhHiWV-QAIPyWI=",
+      "sender_name": "Ayushi Singh",
+      "sender_email": "ayushiisingh08@gmail.com",
+      "recipients": [
+        {
+          "name": "IBEX Mailbox Triage",
+          "email": "ibex.triage@aoscaustralia.com"
+        }
+      ],
+      "cc": [],
+      "bcc": [],
+      "subject": "invoice",
+      "body_plain": "heloo team, sending u invoice",
+      "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">heloo team , sending u invoice&nbsp;<br></div></body></html>",
+      "received_at": "2026-11-26T02:39:33Z",
+      "is_read": true,
+      "has_attachments": true,
+      "attachments": [],
+      "triage": {
+        "category": "Invoice / Finance",
+        "priority": "High",
+        "confidence": 0.9,
+        "action_required": false,
+        "response_required": false,
+        "follow_up_required": false,
+        "suggested_action": "Verify invoice details, check ABN and match with accounting records.",
+        "due_date": null,
+        "summary": "heloo team, sending u invoice",
+        "key_points": [
+          "Includes attachment(s): files"
+        ],
+        "entities": {
+          "ai_classification": {
+            "document_type": "supplier_invoice",
+            "platform_subtype": null,
+            "confidence": 0.9,
+            "status": "needs_review",
+            "client": {
+              "client_id": null,
+              "entity_id": null,
+              "group_id": null,
+              "client_name": null,
+              "confidence": 0.0,
+              "match_basis": "unmatched",
+              "matched_value": null
+            },
+            "extracted_fields": {
+              "supplier_name": "heloo team, sending u",
+              "abn": null,
+              "reference": null,
+              "document_date": null,
+              "due_date": null,
+              "period_start": null,
+              "period_end": null,
+              "financial_year": null,
+              "amount_total": null,
+              "subtotal": null,
+              "gst": null,
+              "bank_details": null
+            },
+            "sensitivity": "normal",
+            "suggested_job_ref": null,
+            "review_reasons": [
+              "Client confidence (0.00) below threshold (0.95)"
+            ]
+          },
+          "supplier_name": "heloo team, sending u",
+          "companies": [
+            "heloo team, sending u"
+          ],
+          "sender_name": "Ayushi Singh"
+        },
+        "triaged_at": "2026-11-26T02:39:38.958819+00:00"
+      },
+      "processing_status": "TRIAGED",
+      "error_message": "",
+      "retry_count": 0,
+      "created_at": "2026-11-26T02:39:35.118435+00:00",
+      "updated_at": "2026-11-26T02:39:35.118445+00:00"
+    },
+    {
+      "internal_id": "1978d9d223e9480dbeec254955d49678",
+      "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAv5P-AAA=",
+      "internet_message_id": "<CAFjUDf5C8Wvv7rwZBG_7=uCj0P0zQOV=U6YkwvgDOqmpkyODQA@mail.gmail.com>",
+      "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQAHGGxl8GtnhJpBpgfefxXbc=",
+      "sender_name": "Chandni Poddar",
+      "sender_email": "poddarchandni5@gmail.com",
+      "recipients": [
+        {
+          "name": "IBEX Mailbox Triage",
+          "email": "ibex.triage@aoscaustralia.com"
+        }
+      ],
+      "cc": [],
+      "bcc": [],
+      "subject": "doc",
+      "body_plain": "",
+      "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><img src=\"cid:ii_mwxiq45e0\" alt=\"image.png\" width=\"386\" height=\"483\"><br></div></body></html>",
+      "received_at": "2026-11-26T02:47:16Z",
+      "is_read": true,
+      "has_attachments": false,
+      "attachments": [],
+      "triage": {
+        "category": "Invoice / Finance",
+        "priority": "Medium",
+        "confidence": 0.0,
+        "action_required": false,
+        "response_required": false,
+        "follow_up_required": false,
+        "suggested_action": "Verify invoice details, check ABN and match with accounting records.",
+        "due_date": null,
+        "summary": "Message from Chandni Poddar regarding 'doc'.",
+        "key_points": [],
+        "entities": {
+          "ai_classification": {
+            "document_type": "other",
+            "platform_subtype": null,
+            "confidence": 0.0,
+            "status": "needs_review",
+            "client": {
+              "client_id": null,
+              "entity_id": null,
+              "group_id": null,
+              "client_name": null,
+              "confidence": 0.0,
+              "match_basis": "unmatched",
+              "matched_value": null
+            },
+            "extracted_fields": {
+              "supplier_name": null,
+              "abn": null,
+              "reference": null,
+              "document_date": null,
+              "due_date": null,
+              "period_start": null,
+              "period_end": null,
+              "financial_year": null,
+              "amount_total": null,
+              "subtotal": null,
+              "gst": null,
+              "bank_details": null
+            },
+            "sensitivity": "normal",
+            "suggested_job_ref": null,
+            "review_reasons": [
+              "Client confidence (0.00) below threshold (0.95)",
+              "Document type confidence (0.00) below threshold (0.85)"
+            ]
+          },
+          "sender_name": "Chandni Poddar"
+        },
+        "triaged_at": "2026-11-26T02:47:24.410637+00:00"
+      },
+      "processing_status": "TRIAGED",
+      "error_message": "",
+      "retry_count": 0,
+      "created_at": "2026-11-26T02:47:23.449627+00:00",
+      "updated_at": "2026-11-26T02:47:23.449631+00:00"
+    },
+    {
+      "internal_id": "a3379ab1c8514bbdbb0fd36b5d9022b5",
+      "graph_message_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAv5QAAAA=",
+      "internet_message_id": "<CAFXFHpOmfzH+a+oL9PntHfPnVe+91DedZJ_mejva_9jZvvqC+Q@mail.gmail.com>",
+      "conversation_id": "AAQkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgAQALHhSWI1jr1HigpkWh2l7xQ=",
+      "sender_name": "Ayushi Singh",
+      "sender_email": "ayushiisingh08@gmail.com",
+      "recipients": [
+        {
+          "name": "IBEX Mailbox Triage",
+          "email": "ibex.triage@aoscaustralia.com"
+        }
+      ],
+      "cc": [],
+      "bcc": [],
+      "subject": "new receipt",
+      "body_plain": "hello teams, excel invoice template",
+      "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">hello teams , excel invoice template<br></div></body></html>",
+      "received_at": "2026-11-26T02:47:23Z",
+      "is_read": true,
+      "has_attachments": true,
+      "attachments": [
+        {
+          "id": "cc7ecca16bad49aab0a96b92c9c0b9cc",
+          "graph_attachment_id": "AAMkADk1MTdhNDk0LWMzNTktNGI1Zi05MmYxLTA0OWQzZGM4NGNkYgBGAAAAAABav9etF8t-SKPKIR1vHjnQBwB85UnBCohpQqam-W0465BRAAAAAAEMAAB85UnBCohpQqam-W0465BRAAAAv5QAAAABEgAQAF8hvP0-f9lBk0hw7zVHLO8=",
+          "email_internal_id": "a3379ab1c8514bbdbb0fd36b5d9022b5",
+          "filename": "excel-invoice-template.png",
+          "content_type": "image/png",
+          "size_bytes": 17269,
+          "sha256": "cb19e5d8e4cf55331be10aef92ba65bd18afd6c150ef3ecf20cea618f627a1eb",
+          "is_inline": false,
+          "storage_path": "C:\\Users\\ayush\\OneDrive\\Desktop\\IBEX_core\\Email_Triage\\storage_data\\attachments\\cb\\cb19e5d8e4cf55331be10aef92ba65bd18afd6c150ef3ecf20cea618f627a1eb.png",
+          "downloaded_at": "",
+          "ibex_compatible_payload": {
+            "schema_version": "1.0",
+            "document_id": "DOC-UNTITLED",
+            "message_id": "a3379ab1c8514bbdbb0fd36b5d9022b5",
+            "client": {
+              "client_id": null,
+              "entity_id": null,
+              "group_id": null,
+              "client_name": null,
+              "confidence": 0.0,
+              "match_basis": "unmatched",
+              "matched_value": null
+            },
+            "classification": {
+              "document_type": "supplier_invoice",
+              "subtype": null,
+              "confidence": 0.4,
+              "top_predictions": [
+                {
+                  "document_type": "supplier_invoice",
+                  "subtype": null,
+                  "confidence": 0.4
+                },
+                {
+                  "document_type": "receipt",
+                  "subtype": null,
+                  "confidence": 0.1
+                },
+                {
+                  "document_type": "other",
+                  "subtype": null,
+                  "confidence": 0.09
+                }
+              ]
+            },
+            "intent": {
+              "type": "no_action",
+              "confidence": 0.55
+            },
+            "extracted_fields": {
+              "supplier_name": "hello teams, excel",
+              "abn": null,
+              "reference": "template",
+              "document_date": null,
+              "due_date": null,
+              "period_start": null,
+              "period_end": null,
+              "financial_year": null,
+              "amount_total": null,
+              "subtotal": null,
+              "gst": null,
+              "bank_details": null
+            },
+            "sensitivity": "normal",
+            "sensitivity_reasons": [],
+            "duplicate_of": null,
+            "suggested_job_ref": null,
+            "job_conf": 0.0,
+            "status": "needs_review",
+            "review_reasons": [
+              "Client confidence (0.00) below threshold (0.95)",
+              "Document type confidence (0.40) below threshold (0.85)"
+            ],
+            "extracted_text": ""
+          }
+        }
+      ],
+      "triage": {
+        "category": "Invoice / Finance",
+        "priority": "High",
+        "confidence": 0.4,
+        "action_required": false,
+        "response_required": false,
+        "follow_up_required": false,
+        "suggested_action": "Verify invoice details, check ABN and match with accounting records.",
+        "due_date": null,
+        "summary": "hello teams, excel invoice template",
+        "key_points": [
+          "Invoice #template from hello teams, excel",
+          "Includes attachment(s): excel-invoice-template.png"
+        ],
+        "entities": {
+          "ai_classification": {
+            "document_type": "supplier_invoice",
+            "platform_subtype": null,
+            "confidence": 0.4,
+            "status": "needs_review",
+            "client": {
+              "client_id": null,
+              "entity_id": null,
+              "group_id": null,
+              "client_name": null,
+              "confidence": 0.0,
+              "match_basis": "unmatched",
+              "matched_value": null
+            },
+            "extracted_fields": {
+              "supplier_name": "hello teams, excel",
+              "abn": null,
+              "reference": "template",
+              "document_date": null,
+              "due_date": null,
+              "period_start": null,
+              "period_end": null,
+              "financial_year": null,
+              "amount_total": null,
+              "subtotal": null,
+              "gst": null,
+              "bank_details": null
+            },
+            "sensitivity": "normal",
+            "suggested_job_ref": null,
+            "review_reasons": [
+              "Client confidence (0.00) below threshold (0.95)",
+              "Document type confidence (0.40) below threshold (0.85)"
+            ]
+          },
+          "invoice_number": "template",
+          "supplier_name": "hello teams, excel",
+          "companies": [
+            "hello teams, excel"
+          ],
+          "attachment_source": "excel-invoice-template.png",
+          "sender_name": "Ayushi Singh"
+        },
+        "triaged_at": "2026-11-26T02:47:37.094995+00:00"
+      },
+      "processing_status": "TRIAGED",
+      "error_message": "",
+      "retry_count": 0,
+      "created_at": "2026-11-26T02:47:32.489988+00:00",
+      "updated_at": "2026-11-26T02:47:32.490002+00:00"
     }
   ],
   "sync_states": [
@@ -1539,26 +2356,26 @@
     {
       "mailbox": "ibex.triage@aoscaustralia.com",
       "delta_link": "",
-      "last_sync_time": "2026-11-25T10:20:28.682674+00:00",
-      "emails_synced_total": 11,
+      "last_sync_time": "2026-11-26T03:19:34.577739+00:00",
+      "emails_synced_total": 17,
       "last_status": "COMPLETED",
       "error_code": "",
       "updated_at": "2026-11-24T07:38:53.669172+00:00"
     },
     {
       "mailbox": "ibex.triage@aoscaustralia.com:inbox",
-      "delta_link": "https://graph.microsoft.com/v1.0/users/ibex.triage@aoscaustralia.com/mailFolders('inbox')/messages/delta?$deltatoken=HZ5eMhdBjwOQaX0tLUKWRUJtZH5-jnwxcCzjWwri03hNyKguvTmDpF2QGkPlJCgoFzSgw1NvmIgZou64E9veUvS5uV8DyTr2MywV13zmjV1KO5iBqGp8cHsu5jlWlUW6cjOmZt1G5EQ3O_hXVJIw7VgC8L9lbMAR-ya49V-z2H6pynH3ycr38XOR-RJWQRpbj8_B42NXPFP3NmbKXxGMx9p_jqNq-NlpglhFEyyKKT4J4PXtx8tSiciSgPAcBnhzo_9jvM46XtKYCyCFp0bM31poYSSuVLNNvdvJ_WhLXmVOawbyM7Q6QRqOh_mkZQ5tgNSBNBeLi8FkHYaZHSxZgPr6guK60r0K1ABK_qyC5cBDDducEx4E9f--7KWrbQzx.O4JvEw4Y2nSgTJx_cEx6K5WmKnU3OHkC9L1wcco2vro",
-      "last_sync_time": "2026-11-25T10:20:27.469071+00:00",
-      "emails_synced_total": 11,
+      "delta_link": "https://graph.microsoft.com/v1.0/users/ibex.triage@aoscaustralia.com/mailFolders('inbox')/messages/delta?$deltatoken=HZ5eMhdBjwOQaX0tLUKWRUJtZH5-jnwxcCzjWwri03hNyKguvTmDpF2QGkPlJCgoFzSgw1NvmIgZou64E9veUjlaXZyfDL1tKLo1PSwmG466I3eaTo0NRxR3tltXxhsQYUlq5yBtbcQqKastLiktGTr0g50DH-ETfFId82OGTRwAugNjajVn_zVSokru0eafb7ZApzuBNSGBoRh0tSi9ukHPGbZKaLu3HI8J77uOjkqmPpHqlEYCavcOtfW4A2d2gUSWzlzbK0LZqfdd97b0f_HzPjvQWYhWcj-UVz76NRnijJMg-2dUvAW91asX6XbMfRVqGqcRszmCQESCuTdviYv9MUVq-tEqTEKrQ6actso8sp0FgV-NHBPco7QRLaIg.6eI_DZW1RVBQIaBY0KEkJlaT9bfIf6Ba5PbthZH24iw",
+      "last_sync_time": "2026-11-26T03:19:33.859857+00:00",
+      "emails_synced_total": 18,
       "last_status": "COMPLETED",
       "error_code": "",
       "updated_at": "2026-11-25T02:23:28.137696+00:00"
     },
     {
       "mailbox": "ibex.triage@aoscaustralia.com:junkemail",
-      "delta_link": "https://graph.microsoft.com/v1.0/users/ibex.triage@aoscaustralia.com/mailFolders('junkemail')/messages/delta?$deltatoken=HZ5eMhdBjwOQaX0tLUKWReTvGgW_82oV8UYvMuPu6maeTCxrlOEzGgW_1rghNIERGpQg8yLmgMv9zNWKeY8PHwl9JVglPt98oVhV032EmDssk_n6qLW4PnED5GdweLs4h7BX9GEjv_cbr1H5KqD02rHy-KQ6KKO6hmDC602koggle62KZ9AXMHI5dt1QRfyE4eeSzUhZj31czQcRT2FnXA8WJGdJJYTNIy2wFgGDFjc1YKbhA-xb-K46PrRRzEYnUH4eRWMP6XPap1v9qL_AWxl9jz0UPnuuOXbwgfzdO3kYUXz2RoI5_M1OIfpr-QQUmCBc8Qz-b1dqgbDDsoC_wyS_kVF07EGul2NFCuS5EgxsSPWATqEGcElxT_r_xHAg.HEJSaoJ8-pGuZcRtA35L2moeNAtZURJcC21V3RDhvbk",
-      "last_sync_time": "2026-11-25T10:20:28.675532+00:00",
-      "emails_synced_total": 15,
+      "delta_link": "https://graph.microsoft.com/v1.0/users/ibex.triage@aoscaustralia.com/mailFolders('junkemail')/messages/delta?$deltatoken=HZ5eMhdBjwOQaX0tLUKWReTvGgW_82oV8UYvMuPu6maeTCxrlOEzGgW_1rghNIERGpQg8yLmgMv9zNWKeY8PH2VJBo4Iczq4oOSIsaJFoO6t9MJx7E3SLfARjENXPn8tXFx38-OWii1s0qrFIHiVOD23YcKSPTERFAD_s6qq61WnJtJ1PztP5lrYmZUdxba8YKnYob5uRIrz5g14sEz6G4xvCZepimd_lFRRqMncFg8AbGC4LGe3txB1g1lefsPQ6YUKecBNAdiwsYb-wVQvoq9x0en2MauEpShzYxtYiaAR3gNHFCWaPxhQ1ORd8QmUZM1j8IlnEA3qanCp9-Jg8ZYcayOEPqaXkyxCxswzYb80pyy73Dv5n9lYCogosf-K.N_2PcYNusaq5tJr2gyuBojcLqPAax5GozDbeQwfruI8",
+      "last_sync_time": "2026-11-26T03:19:34.573584+00:00",
+      "emails_synced_total": 22,
       "last_status": "COMPLETED",
       "error_code": "",
       "updated_at": "2026-11-25T02:23:28.141446+00:00"

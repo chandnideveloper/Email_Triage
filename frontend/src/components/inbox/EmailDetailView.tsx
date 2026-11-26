@@ -4,8 +4,6 @@ import {
   CheckCircle2,
   MailCheck,
   Mail,
-  Reply,
-  Forward,
   Download,
   Calendar,
   Building,
@@ -20,14 +18,15 @@ import {
   Layers,
   ShieldCheck,
   Check,
-  ChevronDown,
   Edit3,
   ExternalLink,
   UserCheck,
   Loader2,
   Sparkles,
+  ChevronDown,
+  Sliders,
 } from 'lucide-react';
-import { EmailRecord, EmailCategory, Priority } from '@/types';
+import { EmailRecord, EmailCategory, Priority, ProcessingStatus } from '@/types';
 import { api } from '@/services/api';
 import { PriorityBadge } from '@/components/common/PriorityBadge';
 import { CategoryBadge } from '@/components/common/CategoryBadge';
@@ -39,9 +38,11 @@ import { cn } from '@/utils/cn';
 interface EmailDetailViewProps {
   email: EmailRecord;
   onClose?: () => void;
-  onToggleRead: (id: string, isRead: boolean) => void;
+  onToggleRead?: (id: string, isRead: boolean) => void;
   onMarkCompleted: (id: string) => void;
 }
+
+const ALL_PRIORITIES: Priority[] = ['Critical', 'High', 'Medium', 'Low'];
 
 const ALL_CATEGORIES: EmailCategory[] = [
   'Invoice / Finance',
@@ -54,8 +55,6 @@ const ALL_CATEGORIES: EmailCategory[] = [
   'Other',
 ];
 
-const ALL_PRIORITIES: Priority[] = ['Critical', 'High', 'Medium', 'Low'];
-
 export const EmailDetailView: React.FC<EmailDetailViewProps> = ({
   email,
   onClose,
@@ -64,10 +63,62 @@ export const EmailDetailView: React.FC<EmailDetailViewProps> = ({
 }) => {
   const toast = useToast();
   const [currentEmail, setCurrentEmail] = useState<EmailRecord>(email);
-  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
-  const [showPriorityMenu, setShowPriorityMenu] = useState(false);
   const [isDataApproved, setIsDataApproved] = useState(false);
   const [isManualReviewSent, setIsManualReviewSent] = useState(false);
+  const [showPriorityMenu, setShowPriorityMenu] = useState(false);
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
+
+  const handlePriorityChange = async (prio: Priority) => {
+    setShowPriorityMenu(false);
+    try {
+      await api.updatePriority([currentEmail.internal_id], prio);
+      setCurrentEmail((prev) => ({
+        ...prev,
+        triage: {
+          ...prev.triage,
+          priority: prio,
+        },
+      }));
+      toast.success('Priority Updated', `Set priority to ${prio}`);
+      window.dispatchEvent(new Event('triage_updated'));
+    } catch {
+      toast.error('Failed to update priority');
+    }
+  };
+
+  const handleStatusChange = async (st: ProcessingStatus) => {
+    setShowStatusMenu(false);
+    try {
+      await api.updateStatus([currentEmail.internal_id], st);
+      setCurrentEmail((prev) => ({
+        ...prev,
+        processing_status: st,
+      }));
+      toast.success('Status Updated', `Status changed to ${st}`);
+      window.dispatchEvent(new Event('triage_updated'));
+    } catch {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const handleCategoryChange = async (cat: EmailCategory) => {
+    setShowCategoryMenu(false);
+    try {
+      await api.updateCategory([currentEmail.internal_id], cat);
+      setCurrentEmail((prev) => ({
+        ...prev,
+        triage: {
+          ...prev.triage,
+          category: cat,
+        },
+      }));
+      toast.success('Category Updated', `Set document type to ${cat}`);
+      window.dispatchEvent(new Event('triage_updated'));
+    } catch {
+      toast.error('Failed to update category');
+    }
+  };
 
   useEffect(() => {
     setCurrentEmail(email);
@@ -118,24 +169,6 @@ export const EmailDetailView: React.FC<EmailDetailViewProps> = ({
         return <FileCode className="w-4 h-4 text-[#547FA5]" />;
       default:
         return <File className="w-4 h-4 text-[#687786]" />;
-    }
-  };
-
-  const handleCategoryChange = async (cat: EmailCategory) => {
-    setShowCategoryMenu(false);
-    await api.updateCategory([currentEmail.internal_id], cat);
-    toast.success('Category Updated', `Assigned to ${cat}`);
-    window.dispatchEvent(new Event('triage_updated'));
-  };
-
-  const handlePriorityChange = async (prio: Priority) => {
-    setShowPriorityMenu(false);
-    try {
-      await api.updatePriority([currentEmail.internal_id], prio);
-      toast.success('Priority Updated', `Set priority to ${prio}`);
-      window.dispatchEvent(new Event('triage_updated'));
-    } catch {
-      toast.error('Failed to update priority');
     }
   };
 
@@ -213,102 +246,13 @@ export const EmailDetailView: React.FC<EmailDetailViewProps> = ({
     return rawSummary || plainBody || 'No content provided.';
   };
 
-  const mailtoReply = `mailto:${encodeURIComponent(currentEmail.sender_email)}?subject=${encodeURIComponent(
-    currentEmail.subject.startsWith('Re:') ? currentEmail.subject : `Re: ${currentEmail.subject}`
-  )}&body=${encodeURIComponent(
-    `\n\n--- Original Message ---\nFrom: ${currentEmail.sender_name} <${currentEmail.sender_email}>\nDate: ${currentEmail.received_at}\n\n${currentEmail.body_plain}`
-  )}`;
-
-  const mailtoForward = `mailto:?subject=${encodeURIComponent(`Fwd: ${currentEmail.subject}`)}&body=${encodeURIComponent(
-    `\n\n--- Forwarded Message ---\nFrom: ${currentEmail.sender_name} <${currentEmail.sender_email}>\nDate: ${currentEmail.received_at}\n\n${currentEmail.body_plain}`
-  )}`;
-
   return (
     <div className="h-full flex flex-col bg-[#FFFFFF] overflow-y-auto select-text">
       {/* Action Header Bar */}
       <div className="px-6 h-[54px] border-b border-[#E3E9ED] flex items-center justify-between sticky top-0 bg-[#FFFFFF] z-10 shrink-0">
-        <div className="flex items-center gap-2">
-          {/* Priority dropdown selector */}
-          <div className="relative">
-            <button
-              onClick={() => setShowPriorityMenu(!showPriorityMenu)}
-              className="flex items-center gap-1 hover:opacity-80 transition cursor-pointer"
-            >
-              <PriorityBadge priority={currentEmail.triage.priority} />
-              <ChevronDown className="w-3 h-3 text-[#687786]" />
-            </button>
-            {showPriorityMenu && (
-              <div className="absolute left-0 mt-1 w-32 bg-[#FFFFFF] border border-[#E3E9ED] rounded shadow-md z-30 py-1 text-xs">
-                {ALL_PRIORITIES.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => handlePriorityChange(p)}
-                    className="w-full text-left px-3 py-1.5 hover:bg-[#F5F7F8] flex items-center justify-between"
-                  >
-                    <span>{p}</span>
-                    {p === currentEmail.triage.priority && <Check className="w-3 h-3 text-[#16877A]" />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Category dropdown selector */}
-          <div className="relative">
-            <button
-              onClick={() => setShowCategoryMenu(!showCategoryMenu)}
-              className="flex items-center gap-1 hover:opacity-80 transition cursor-pointer"
-            >
-              <CategoryBadge category={currentEmail.triage.category} />
-              <ChevronDown className="w-3 h-3 text-[#687786]" />
-            </button>
-            {showCategoryMenu && (
-              <div className="absolute left-0 mt-1 w-48 bg-[#FFFFFF] border border-[#E3E9ED] rounded shadow-md z-30 py-1 text-xs">
-                {ALL_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => handleCategoryChange(cat)}
-                    className="w-full text-left px-3 py-1.5 hover:bg-[#F5F7F8] flex items-center justify-between"
-                  >
-                    <span className="truncate">{cat}</span>
-                    {cat === currentEmail.triage.category && <Check className="w-3 h-3 text-[#16877A]" />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <StatusBadge status={currentEmail.processing_status} size="sm" />
-        </div>
+        <div className="flex items-center gap-2" />
 
         <div className="flex items-center gap-2">
-          {/* Mark read / unread toggle */}
-          <button
-            onClick={() => onToggleRead(currentEmail.internal_id, !currentEmail.is_read)}
-            className="p-1.5 text-[#687786] hover:text-[#202B35] rounded hover:bg-[#F5F7F8] border border-transparent hover:border-[#E3E9ED] transition cursor-pointer"
-            title={currentEmail.is_read ? 'Mark as Unread' : 'Mark as Read'}
-          >
-            {currentEmail.is_read ? <Mail className="w-4 h-4" /> : <MailCheck className="w-4 h-4 text-[#16877A]" />}
-          </button>
-
-          {/* Reply */}
-          <a
-            href={mailtoReply}
-            className="p-1.5 text-[#687786] hover:text-[#202B35] rounded hover:bg-[#F5F7F8] border border-transparent hover:border-[#E3E9ED] transition"
-            title="Reply via Outlook / Mail Client"
-          >
-            <Reply className="w-4 h-4" />
-          </a>
-
-          {/* Forward */}
-          <a
-            href={mailtoForward}
-            className="p-1.5 text-[#687786] hover:text-[#202B35] rounded hover:bg-[#F5F7F8] border border-transparent hover:border-[#E3E9ED] transition"
-            title="Forward via Outlook / Mail Client"
-          >
-            <Forward className="w-4 h-4" />
-          </a>
-
           {/* Mark Resolved Primary Button */}
           <button
             onClick={() => onMarkCompleted(currentEmail.internal_id)}
@@ -721,6 +665,135 @@ export const EmailDetailView: React.FC<EmailDetailViewProps> = ({
                   {currentEmail.processing_status === 'COMPLETED' ? 'Resolved' : 'Mark Resolved'}
                 </button>
               )}
+            </div>
+
+            {/* Manual Triage Classification & Priority Dropdowns */}
+            <div className="p-3.5 rounded-lg border border-[#E3E9ED] bg-[#F5F7F8] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-[#687786] font-semibold flex items-center gap-1.5">
+                  <Sliders className="w-3.5 h-3.5 text-[#16877A]" />
+                  Priority & Classification:
+                </span>
+
+                {/* Priority Dropdown */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPriorityMenu(!showPriorityMenu);
+                      setShowCategoryMenu(false);
+                    }}
+                    className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded bg-[#FFFFFF] border border-[#E3E9ED] hover:border-[#16877A] text-xs font-medium cursor-pointer shadow-2xs transition"
+                    title="Click to manually change priority"
+                  >
+                    <span className="text-[10px] font-mono text-[#687786]">Priority:</span>
+                    <PriorityBadge priority={currentEmail.triage?.priority || 'Low'} size="sm" />
+                    <ChevronDown className="w-3.5 h-3.5 text-[#687786]" />
+                  </button>
+
+                  {showPriorityMenu && (
+                    <div className="absolute left-0 bottom-full mb-1.5 w-40 bg-[#FFFFFF] border border-[#E3E9ED] rounded shadow-lg z-30 py-1 text-xs">
+                      <div className="px-3 py-1 text-[10px] font-mono text-[#687786] uppercase font-semibold border-b border-[#E3E9ED]">
+                        Select Priority
+                      </div>
+                      {ALL_PRIORITIES.map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => handlePriorityChange(p)}
+                          className="w-full text-left px-3 py-1.5 hover:bg-[#F5F7F8] flex items-center justify-between cursor-pointer transition"
+                        >
+                          <PriorityBadge priority={p} size="sm" />
+                          {p === currentEmail.triage?.priority && (
+                            <Check className="w-3.5 h-3.5 text-[#16877A]" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Category / Document Type Dropdown */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCategoryMenu(!showCategoryMenu);
+                      setShowPriorityMenu(false);
+                    }}
+                    className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded bg-[#FFFFFF] border border-[#E3E9ED] hover:border-[#16877A] text-xs font-medium cursor-pointer shadow-2xs transition"
+                    title="Click to manually change category / document type"
+                  >
+                    <span className="text-[10px] font-mono text-[#687786]">Doc Type:</span>
+                    <CategoryBadge category={currentEmail.triage?.category || 'Other'} size="sm" />
+                    <ChevronDown className="w-3.5 h-3.5 text-[#687786]" />
+                  </button>
+
+                  {showCategoryMenu && (
+                    <div className="absolute left-0 bottom-full mb-1.5 w-52 bg-[#FFFFFF] border border-[#E3E9ED] rounded shadow-lg z-30 py-1 text-xs max-h-56 overflow-y-auto">
+                      <div className="px-3 py-1 text-[10px] font-mono text-[#687786] uppercase font-semibold border-b border-[#E3E9ED]">
+                        Select Document Type
+                      </div>
+                      {ALL_CATEGORIES.map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => handleCategoryChange(cat)}
+                          className="w-full text-left px-3 py-1.5 hover:bg-[#F5F7F8] flex items-center justify-between cursor-pointer transition text-xs"
+                        >
+                          <span className="truncate">{cat}</span>
+                          {cat === currentEmail.triage?.category && (
+                            <Check className="w-3.5 h-3.5 text-[#16877A]" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Status Dropdown */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowStatusMenu(!showStatusMenu);
+                      setShowPriorityMenu(false);
+                      setShowCategoryMenu(false);
+                    }}
+                    className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded bg-[#FFFFFF] border border-[#E3E9ED] hover:border-[#16877A] text-xs font-medium cursor-pointer shadow-2xs transition"
+                    title="Click to manually change status"
+                  >
+                    <span className="text-[10px] font-mono text-[#687786]">Status:</span>
+                    <StatusBadge status={currentEmail.processing_status} size="sm" />
+                    <ChevronDown className="w-3.5 h-3.5 text-[#687786]" />
+                  </button>
+
+                  {showStatusMenu && (
+                    <div className="absolute left-0 bottom-full mb-1.5 w-48 bg-[#FFFFFF] border border-[#E3E9ED] rounded shadow-lg z-30 py-1 text-xs">
+                      <div className="px-3 py-1 text-[10px] font-mono text-[#687786] uppercase font-semibold border-b border-[#E3E9ED]">
+                        Select Status
+                      </div>
+                      {(['TRIAGED', 'NEEDS_REVIEW', 'COMPLETED', 'ATTACHMENTS_PROCESSED'] as ProcessingStatus[]).map((st) => (
+                        <button
+                          key={st}
+                          type="button"
+                          onClick={() => handleStatusChange(st)}
+                          className="w-full text-left px-3 py-1.5 hover:bg-[#F5F7F8] flex items-center justify-between cursor-pointer transition"
+                        >
+                          <StatusBadge status={st} size="sm" />
+                          {st === currentEmail.processing_status && (
+                            <Check className="w-3.5 h-3.5 text-[#16877A]" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <span className="text-[10px] font-mono text-[#687786]">
+                Manual priority updates live
+              </span>
             </div>
           </div>
         )}

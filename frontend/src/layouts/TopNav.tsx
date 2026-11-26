@@ -33,7 +33,6 @@ export const TopNav: React.FC<TopNavProps> = ({ onSearch, onSyncComplete }) => {
   const [searchValue, setSearchValue] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [recentEvents, setRecentEvents] = useState<any[]>([]);
-  const [lastSyncTime, setLastSyncTime] = useState<string>('Just now');
   const notifRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -92,7 +91,6 @@ export const TopNav: React.FC<TopNavProps> = ({ onSearch, onSyncComplete }) => {
       setIsSyncing(true);
       toast.info('Sync Initiated', 'Checking Microsoft Graph delta tokens for new mail...');
       await api.triggerSync();
-      setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       toast.success('Mailbox Synced', 'All inbound messages are up to date.');
       loadNotifications();
       if (onSyncComplete) onSyncComplete();
@@ -130,9 +128,6 @@ export const TopNav: React.FC<TopNavProps> = ({ onSearch, onSyncComplete }) => {
         <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded bg-[#F5F7F8] border border-[#E3E9ED]">
           <span className="w-2 h-2 rounded-full bg-[#16877A]" />
           <span className="text-xs text-[#202B35] font-medium">Outlook 365 Connected</span>
-          <span className="text-[10px] text-[#687786] font-mono pl-1 border-l border-[#E3E9ED]">
-            Sync: {lastSyncTime}
-          </span>
         </div>
 
         {/* Sync Now Button */}

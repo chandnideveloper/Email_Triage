@@ -6,14 +6,17 @@ import {
   CheckCircle,
   Inbox as InboxIcon,
   Flame,
+  AlertTriangle,
   AlertOctagon,
   Clock,
+  ArrowDownCircle,
   ArrowUpDown,
   Mail,
   MailCheck,
   Tag,
   Paperclip,
   CheckSquare,
+  CheckCircle2,
   Square,
   X,
   ChevronDown,
@@ -43,7 +46,7 @@ export const Inbox: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
 
-  const [emails, setEmails] = useState<EmailRecord[]>([]);
+  const [allEmails, setAllEmails] = useState<EmailRecord[]>([]);
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(
     searchParams.get('id') || null
   );
@@ -51,71 +54,46 @@ export const Inbox: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showBulkCategoryMenu, setShowBulkCategoryMenu] = useState(false);
 
-  // Counters for left sub-navigation
-  const [counts, setCounts] = useState({
-    total: 0,
-    critical: 0,
-    action: 0,
-    unread: 0,
-    categories: {} as Record<string, number>,
-  });
+  // Filters from URL
+  const search = searchParams.get('search') || '';
+  const selectedCategory = searchParams.get('category') || 'all';
+  const selectedPriority = searchParams.get('priority') || 'all';
+  const readFilter = (searchParams.get('read') as 'all' | 'unread' | 'read') || 'all';
+  const actionOnly = searchParams.get('action') === 'true';
+  const attachmentsOnly = searchParams.get('attachments') === 'true';
+  const resolvedOnly = searchParams.get('resolved') === 'true';
+  const sortBy = (searchParams.get('sort') as 'newest' | 'oldest' | 'priority') || 'newest';
 
-  // Filters
-  const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    searchParams.get('category') || 'all'
-  );
-  const [selectedPriority, setSelectedPriority] = useState<string>(searchParams.get('priority') || 'all');
-  const [readFilter, setReadFilter] = useState<'all' | 'unread' | 'read'>(
-    (searchParams.get('read') as any) || 'all'
-  );
-  const [actionOnly, setActionOnly] = useState<boolean>(searchParams.get('action') === 'true');
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'priority'>('newest');
+  const setSearch = (val: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (val) next.set('search', val);
+    else next.delete('search');
+    setSearchParams(next);
+  };
 
+  const setSortBy = (val: 'newest' | 'oldest' | 'priority') => {
+    const next = new URLSearchParams(searchParams);
+    if (val === 'newest') next.delete('sort');
+    else next.set('sort', val);
+    setSearchParams(next);
+  };
+
+  // Synchronize selectedEmailId with URL param if present
+  useEffect(() => {
+    const id = searchParams.get('id');
+    if (id && id !== selectedEmailId) {
+      setSelectedEmailId(id);
+    }
+  }, [searchParams]);
+
+  // Load all emails from API / localStorage
   const loadEmails = async (isBackground = false) => {
     try {
       if (!isBackground) {
         setLoading(true);
       }
-      // Fetch unfiltered emails to compute live badges and counts
-      const allRes = await api.getEmails({});
-      const raw = allRes.items;
-      const cats: Record<string, number> = {};
-      raw.forEach((e) => {
-        const c = e.triage?.category || 'Other';
-        cats[c] = (cats[c] || 0) + 1;
-      });
-      setCounts({
-        total: raw.length,
-        critical: raw.filter((e) => e.triage?.priority === 'Critical').length,
-        action: raw.filter((e) => e.triage?.action_required).length,
-        unread: raw.filter((e) => !e.is_read).length,
-        categories: cats,
-      });
-
-      // Now fetch filtered list
-      const res = await api.getEmails({
-        search,
-        category: selectedCategory,
-        priority: selectedPriority,
-        readFilter,
-        actionRequired: actionOnly ? true : null,
-        sortBy,
-      });
-      setEmails(res.items);
-
-      if (res.items.length > 0) {
-        setSelectedEmailId((prevId) => {
-          if (prevId && res.items.some((e) => e.internal_id === prevId)) {
-            return prevId;
-          }
-          const idFromUrl = searchParams.get('id');
-          const match = idFromUrl ? res.items.find((e) => e.internal_id === idFromUrl) : null;
-          return match ? match.internal_id : res.items[0].internal_id;
-        });
-      } else {
-        setSelectedEmailId(null);
-      }
+      const res = await api.getEmails({});
+      setAllEmails(res.items);
     } catch {
       if (!isBackground) {
         toast.error('Failed to load emails');
@@ -127,56 +105,152 @@ export const Inbox: React.FC = () => {
     }
   };
 
-  // Periodic background sync from Microsoft Graph (every 10s for fast email intake)
+  // Initial load & periodic background sync (every 10s)
   useEffect(() => {
-    const runSync = async () => {
-      try {
-        await api.triggerSync();
-        loadEmails(true);
-      } catch (err) {
-        console.debug('Background sync skipped/failed:', err);
-      }
-    };
-
-    const syncInterval = setInterval(runSync, 10000);
-    return () => clearInterval(syncInterval);
-  }, []);
-
-  // Fast-poll inbox when any email is being actively analyzed by AI
-  useEffect(() => {
-    const hasAnalyzing = emails.some(
-      (e) => e.processing_status === 'PENDING' || e.processing_status === 'INGESTED' || e.processing_status === 'RETRYING'
-    );
-    if (!hasAnalyzing) return;
-
-    const fastPoll = setInterval(() => {
-      loadEmails(true);
-    }, 2000);
-
-    return () => clearInterval(fastPoll);
-  }, [emails]);
-
-  useEffect(() => {
-    loadEmails(emails.length > 0);
+    loadEmails(false);
+    const interval = setInterval(() => loadEmails(true), 10000);
     const handleUpdate = () => loadEmails(true);
     window.addEventListener('triage_updated', handleUpdate);
-    const interval = setInterval(() => loadEmails(true), 12000);
     return () => {
-      window.removeEventListener('triage_updated', handleUpdate);
       clearInterval(interval);
+      window.removeEventListener('triage_updated', handleUpdate);
     };
-  }, [search, selectedCategory, selectedPriority, readFilter, actionOnly, sortBy]);
+  }, []);
 
-  // Synchronize state bidirectionally with URL
+  // Compute live counts synchronously in memory
+  const counts = useMemo(() => {
+    const raw = allEmails;
+    const cats: Record<string, number> = {};
+    raw.forEach((e) => {
+      const c = e.triage?.category || 'Other';
+      cats[c] = (cats[c] || 0) + 1;
+    });
+    return {
+      total: raw.length,
+      critical: raw.filter((e) => e.triage?.priority === 'Critical').length,
+      high: raw.filter((e) => e.triage?.priority === 'High').length,
+      medium: raw.filter((e) => e.triage?.priority === 'Medium').length,
+      low: raw.filter((e) => e.triage?.priority === 'Low').length,
+      action: raw.filter((e) => e.triage?.action_required).length,
+      hasAttachments: raw.filter((e) => e.has_attachments).length,
+      resolved: raw.filter((e) => e.processing_status === 'COMPLETED').length,
+      unread: raw.filter((e) => !e.is_read).length,
+      read: raw.filter((e) => e.is_read).length,
+      categories: cats,
+    };
+  }, [allEmails]);
+
+  // Compute filtered emails synchronously in memory (instant 0ms response)
+  const filteredEmails = useMemo(() => {
+    let list = [...allEmails];
+
+    // Search query filter
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter(
+        (e) =>
+          e.subject?.toLowerCase().includes(q) ||
+          e.sender_name?.toLowerCase().includes(q) ||
+          e.sender_email?.toLowerCase().includes(q) ||
+          e.body_plain?.toLowerCase().includes(q) ||
+          e.triage?.summary?.toLowerCase().includes(q) ||
+          (e.triage?.entities?.companies || []).some((c: string) => c.toLowerCase().includes(q)) ||
+          (e.triage?.entities?.amounts || []).some((a: string) => a.toLowerCase().includes(q))
+      );
+    }
+
+    // Category filter
+    if (selectedCategory !== 'all') {
+      list = list.filter((e) => e.triage?.category === selectedCategory);
+    }
+
+    // Priority filter
+    if (selectedPriority !== 'all') {
+      list = list.filter((e) => e.triage?.priority === selectedPriority);
+    }
+
+    // Read State filter
+    if (readFilter === 'unread') {
+      list = list.filter((e) => !e.is_read);
+    } else if (readFilter === 'read') {
+      list = list.filter((e) => e.is_read);
+    }
+
+    // Action Required filter
+    if (actionOnly) {
+      list = list.filter((e) => e.triage?.action_required);
+    }
+
+    // Attachments filter
+    if (attachmentsOnly) {
+      list = list.filter((e) => e.has_attachments);
+    }
+
+    // Resolved filter
+    if (resolvedOnly) {
+      list = list.filter((e) => e.processing_status === 'COMPLETED');
+    }
+
+    // Sort order
+    if (sortBy === 'newest') {
+      list.sort((a, b) => new Date(b.received_at).getTime() - new Date(a.received_at).getTime());
+    } else if (sortBy === 'oldest') {
+      list.sort((a, b) => new Date(a.received_at).getTime() - new Date(b.received_at).getTime());
+    } else if (sortBy === 'priority') {
+      const prioWeight: Record<string, number> = { Critical: 4, High: 3, Medium: 2, Low: 1 };
+      list.sort(
+        (a, b) =>
+          (prioWeight[b.triage?.priority || 'Low'] || 0) -
+          (prioWeight[a.triage?.priority || 'Low'] || 0)
+      );
+    }
+
+    return list;
+  }, [
+    allEmails,
+    search,
+    selectedCategory,
+    selectedPriority,
+    readFilter,
+    actionOnly,
+    attachmentsOnly,
+    resolvedOnly,
+    sortBy,
+  ]);
+
+  // Automatically maintain selected email if available
   useEffect(() => {
-    setSelectedCategory(searchParams.get('category') || 'all');
-    setSelectedPriority(searchParams.get('priority') || 'all');
-    setReadFilter((searchParams.get('read') as any) || 'all');
-    setActionOnly(searchParams.get('action') === 'true');
-    setSearch(searchParams.get('search') || '');
-    const id = searchParams.get('id');
-    if (id) setSelectedEmailId(id);
-  }, [searchParams]);
+    if (filteredEmails.length > 0) {
+      if (!selectedEmailId || !filteredEmails.some((e) => e.internal_id === selectedEmailId)) {
+        const idFromUrl = searchParams.get('id');
+        const match = idFromUrl ? filteredEmails.find((e) => e.internal_id === idFromUrl) : null;
+        if (match) {
+          setSelectedEmailId(match.internal_id);
+        } else {
+          setSelectedEmailId(filteredEmails[0].internal_id);
+        }
+      }
+    }
+  }, [filteredEmails, selectedEmailId, searchParams]);
+
+  const selectedEmail = useMemo(() => {
+    return allEmails.find((e) => e.internal_id === selectedEmailId) || null;
+  }, [allEmails, selectedEmailId]);
+
+  // Click email to open & automatically mark as read
+  const handleOpenEmail = (email: EmailRecord) => {
+    setSelectedEmailId(email.internal_id);
+    const next = new URLSearchParams(searchParams);
+    next.set('id', email.internal_id);
+    setSearchParams(next);
+
+    if (!email.is_read) {
+      setAllEmails((prev) =>
+        prev.map((e) => (e.internal_id === email.internal_id ? { ...e, is_read: true } : e))
+      );
+      api.markRead([email.internal_id], true, true);
+    }
+  };
 
   const handleSelectAllMail = () => {
     setSearchParams({});
@@ -203,6 +277,26 @@ export const Inbox: React.FC = () => {
     setSearchParams(next);
   };
 
+  const handleToggleAttachmentsOnly = () => {
+    const next = new URLSearchParams(searchParams);
+    if (attachmentsOnly) {
+      next.delete('attachments');
+    } else {
+      next.set('attachments', 'true');
+    }
+    setSearchParams(next);
+  };
+
+  const handleToggleResolvedOnly = () => {
+    const next = new URLSearchParams(searchParams);
+    if (resolvedOnly) {
+      next.delete('resolved');
+    } else {
+      next.set('resolved', 'true');
+    }
+    setSearchParams(next);
+  };
+
   const handleReadFilterChange = (val: 'all' | 'unread' | 'read') => {
     const next = new URLSearchParams(searchParams);
     if (val === 'all') {
@@ -210,17 +304,9 @@ export const Inbox: React.FC = () => {
     } else {
       next.set('read', val);
     }
-    setSearchParams(next);
-  };
-
-  const handleCategorySelect = (cat: string) => {
-    const next = new URLSearchParams(searchParams);
-    if (selectedCategory === cat) {
-      next.delete('category');
-    } else {
-      next.set('category', cat);
-      next.delete('priority');
-    }
+    // Remove specific email id from URL when switching read state so read emails don't leak into unread
+    next.delete('id');
+    setSelectedEmailId(null);
     setSearchParams(next);
   };
 
@@ -228,15 +314,11 @@ export const Inbox: React.FC = () => {
     setSearchParams({});
   };
 
-  const selectedEmail = useMemo(() => {
-    return emails.find((e) => e.internal_id === selectedEmailId) || null;
-  }, [emails, selectedEmailId]);
-
   const handleSelectAll = () => {
-    if (selectedIds.length === emails.length) {
+    if (selectedIds.length === filteredEmails.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(emails.map((e) => e.internal_id));
+      setSelectedIds(filteredEmails.map((e) => e.internal_id));
     }
   };
 
@@ -247,29 +329,22 @@ export const Inbox: React.FC = () => {
     );
   };
 
-  const handleBulkMarkRead = async (isRead: boolean) => {
-    if (selectedIds.length === 0) return;
-    const targetIds = [...selectedIds];
-    setEmails((prev) =>
-      prev.map((e) => (targetIds.includes(e.internal_id) ? { ...e, is_read: isRead } : e))
-    );
-    setSelectedIds([]);
-    await api.markRead(targetIds, isRead);
-    toast.success(`Marked ${targetIds.length} email(s) as ${isRead ? 'read' : 'unread'}`);
-    loadEmails(true);
-  };
-
   const handleBulkMarkCompleted = async () => {
     if (selectedIds.length === 0) return;
     const targetIds = [...selectedIds];
-    setEmails((prev) =>
+    setAllEmails((prev) =>
       prev.map((e) =>
         targetIds.includes(e.internal_id)
           ? {
               ...e,
               is_read: true,
               processing_status: 'COMPLETED' as any,
-              triage: { ...e.triage, action_required: false, response_required: false, follow_up_required: false },
+              triage: {
+                ...e.triage,
+                action_required: false,
+                response_required: false,
+                follow_up_required: false,
+              },
             }
           : e
       )
@@ -283,7 +358,7 @@ export const Inbox: React.FC = () => {
   const handleBulkCategorize = async (cat: EmailCategory) => {
     if (selectedIds.length === 0) return;
     const targetIds = [...selectedIds];
-    setEmails((prev) =>
+    setAllEmails((prev) =>
       prev.map((e) =>
         targetIds.includes(e.internal_id)
           ? { ...e, triage: { ...e.triage, category: cat } }
@@ -321,7 +396,7 @@ export const Inbox: React.FC = () => {
             onClick={handleSelectAllMail}
             className={cn(
               'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
-              selectedCategory === 'all' && selectedPriority === 'all' && !actionOnly && readFilter === 'all'
+              selectedCategory === 'all' && selectedPriority === 'all' && !actionOnly && !attachmentsOnly && !resolvedOnly && readFilter === 'all'
                 ? 'bg-[#E3E9ED] text-[#172B3A] font-semibold'
                 : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
             )}
@@ -333,44 +408,155 @@ export const Inbox: React.FC = () => {
               {counts.total}
             </span>
           </button>
+        </div>
 
-          <button
-            onClick={() => handleTogglePriority('Critical')}
-            className={cn(
-              'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
-              selectedPriority === 'Critical'
-                ? 'bg-[#FBECEE] text-[#C94F56] font-semibold border border-[#F7D3D6]'
-                : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
-            )}
-          >
-            <span className="flex items-center gap-2">
-              <Flame className="w-3.5 h-3.5 text-[#C94F56]" /> Critical / P1
-            </span>
-            {counts.critical > 0 && (
-              <span className="text-[10px] font-mono text-[#C94F56] bg-[#FFFFFF] border border-[#F7D3D6] px-1.5 py-0.2 rounded font-semibold">
-                {counts.critical}
+        {/* Priority Filter */}
+        <div className="mb-4">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#687786] font-semibold block mb-1.5 px-1">
+            Priority
+          </span>
+          <div className="space-y-0.5">
+            <button
+              onClick={() => handleTogglePriority('Critical')}
+              className={cn(
+                'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
+                selectedPriority === 'Critical'
+                  ? 'bg-[#FBECEE] text-[#C94F56] font-semibold border border-[#F7D3D6]'
+                  : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <Flame className="w-3.5 h-3.5 text-[#C94F56]" /> Critical / P1
               </span>
-            )}
-          </button>
+              {counts.critical > 0 && (
+                <span className="text-[10px] font-mono text-[#C94F56] bg-[#FFFFFF] border border-[#F7D3D6] px-1.5 py-0.2 rounded font-semibold">
+                  {counts.critical}
+                </span>
+              )}
+            </button>
 
-          <button
-            onClick={handleToggleActionOnly}
-            className={cn(
-              'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
-              actionOnly
-                ? 'bg-[#FBF3E6] text-[#D99A38] font-semibold border border-[#F5E0C2]'
-                : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
-            )}
-          >
-            <span className="flex items-center gap-2">
-              <AlertOctagon className="w-3.5 h-3.5 text-[#D99A38]" /> Action Required
-            </span>
-            {counts.action > 0 && (
-              <span className="text-[10px] font-mono text-[#D99A38] bg-[#FFFFFF] border border-[#F5E0C2] px-1.5 py-0.2 rounded font-semibold">
-                {counts.action}
+            <button
+              onClick={() => handleTogglePriority('High')}
+              className={cn(
+                'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
+                selectedPriority === 'High'
+                  ? 'bg-[#FBF3E6] text-[#D99A38] font-semibold border border-[#F5E0C2]'
+                  : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-[#D99A38]" /> High
               </span>
-            )}
-          </button>
+              {counts.high > 0 && (
+                <span className="text-[10px] font-mono text-[#D99A38] bg-[#FFFFFF] border border-[#F5E0C2] px-1.5 py-0.2 rounded font-semibold">
+                  {counts.high}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => handleTogglePriority('Medium')}
+              className={cn(
+                'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
+                selectedPriority === 'Medium'
+                  ? 'bg-[#EDF3F8] text-[#2F658A] font-semibold border border-[#D0E2EE]'
+                  : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 text-[#2F658A]" /> Medium
+              </span>
+              {counts.medium > 0 && (
+                <span className="text-[10px] font-mono text-[#2F658A] bg-[#FFFFFF] border border-[#D0E2EE] px-1.5 py-0.2 rounded font-semibold">
+                  {counts.medium}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => handleTogglePriority('Low')}
+              className={cn(
+                'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
+                selectedPriority === 'Low'
+                  ? 'bg-[#F0F4F7] text-[#556977] font-semibold border border-[#D9E2E8]'
+                  : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <ArrowDownCircle className="w-3.5 h-3.5 text-[#556977]" /> Low
+              </span>
+              {counts.low > 0 && (
+                <span className="text-[10px] font-mono text-[#556977] bg-[#FFFFFF] border border-[#D9E2E8] px-1.5 py-0.2 rounded font-semibold">
+                  {counts.low}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Filters */}
+        <div className="mb-4">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#687786] font-semibold block mb-1.5 px-1">
+            Quick Filters
+          </span>
+          <div className="space-y-0.5">
+            <button
+              onClick={handleToggleActionOnly}
+              className={cn(
+                'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
+                actionOnly
+                  ? 'bg-[#FBF3E6] text-[#D99A38] font-semibold border border-[#F5E0C2]'
+                  : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <AlertOctagon className="w-3.5 h-3.5 text-[#D99A38]" /> Action Required
+              </span>
+              {counts.action > 0 && (
+                <span className="text-[10px] font-mono text-[#D99A38] bg-[#FFFFFF] border border-[#F5E0C2] px-1.5 py-0.2 rounded font-semibold">
+                  {counts.action}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={handleToggleAttachmentsOnly}
+              className={cn(
+                'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
+                attachmentsOnly
+                  ? 'bg-[#E8F4F1] text-[#16877A] font-semibold border border-[#C6E6DF]'
+                  : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <Paperclip className="w-3.5 h-3.5 text-[#16877A]" /> With Attachments
+              </span>
+              {counts.hasAttachments > 0 && (
+                <span className="text-[10px] font-mono text-[#16877A] bg-[#FFFFFF] border border-[#C6E6DF] px-1.5 py-0.2 rounded font-semibold">
+                  {counts.hasAttachments}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={handleToggleResolvedOnly}
+              className={cn(
+                'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition cursor-pointer',
+                resolvedOnly
+                  ? 'bg-[#E8F4F1] text-[#16877A] font-semibold border border-[#C6E6DF]'
+                  : 'text-[#687786] hover:bg-[#E3E9ED]/60 hover:text-[#202B35]'
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#16877A]" /> Resolved
+              </span>
+              {counts.resolved > 0 && (
+                <span className="text-[10px] font-mono text-[#16877A] bg-[#FFFFFF] border border-[#C6E6DF] px-1.5 py-0.2 rounded font-semibold">
+                  {counts.resolved}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Read State Selector */}
@@ -382,69 +568,45 @@ export const Inbox: React.FC = () => {
             <button
               onClick={() => handleReadFilterChange('all')}
               className={cn(
-                'flex-1 py-1 rounded text-center text-[11px] font-medium transition cursor-pointer',
+                'flex-1 py-1 rounded text-center text-[11px] font-medium transition cursor-pointer flex items-center justify-center gap-1',
                 readFilter === 'all'
                   ? 'bg-[#FFFFFF] text-[#172B3A] shadow-2xs font-semibold'
                   : 'text-[#687786] hover:text-[#202B35]'
               )}
             >
               All
+              <span className="text-[10px] opacity-75 font-mono">({counts.total})</span>
             </button>
             <button
               onClick={() => handleReadFilterChange('unread')}
               className={cn(
-                'flex-1 py-1 rounded text-center text-[11px] font-medium transition cursor-pointer',
+                'flex-1 py-1 rounded text-center text-[11px] font-medium transition cursor-pointer flex items-center justify-center gap-1',
                 readFilter === 'unread'
                   ? 'bg-[#FFFFFF] text-[#172B3A] shadow-2xs font-semibold'
                   : 'text-[#687786] hover:text-[#202B35]'
               )}
             >
               Unread
+              {counts.unread > 0 && (
+                <span className="text-[10px] font-semibold text-[#16877A] font-mono">({counts.unread})</span>
+              )}
             </button>
             <button
               onClick={() => handleReadFilterChange('read')}
               className={cn(
-                'flex-1 py-1 rounded text-center text-[11px] font-medium transition cursor-pointer',
+                'flex-1 py-1 rounded text-center text-[11px] font-medium transition cursor-pointer flex items-center justify-center gap-1',
                 readFilter === 'read'
                   ? 'bg-[#FFFFFF] text-[#172B3A] shadow-2xs font-semibold'
                   : 'text-[#687786] hover:text-[#202B35]'
               )}
             >
               Read
+              <span className="text-[10px] opacity-75 font-mono">({counts.read})</span>
             </button>
           </div>
         </div>
 
-        {/* Categories List */}
-        <div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[#687786] font-semibold block mb-1.5 px-1">
-            Categories
-          </span>
-          <div className="space-y-0.5">
-            {INBOX_CATEGORIES.map((cat) => {
-              const count = counts.categories[cat] || 0;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => handleCategorySelect(cat)}
-                  className={cn(
-                    'w-full text-left px-2 py-1 rounded text-xs truncate transition flex items-center justify-between cursor-pointer',
-                    selectedCategory === cat
-                      ? 'bg-[#E3E9ED] text-[#172B3A] font-semibold'
-                      : 'text-[#687786] hover:bg-[#E3E9ED]/50 hover:text-[#202B35]'
-                  )}
-                >
-                  <span className="truncate">{cat}</span>
-                  {count > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#FFFFFF] text-[#687786] border border-[#E3E9ED] font-medium ml-1">
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+
       </div>
 
       {/* COLUMN 2: Middle Email List (350px) */}
@@ -460,7 +622,7 @@ export const Inbox: React.FC = () => {
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-[#172B3A]">Inbox</h2>
               <span className="text-[11px] font-mono px-1.5 py-0.2 font-medium bg-[#FFFFFF] border border-[#E3E9ED] text-[#16877A] rounded">
-                {emails.length}
+                {filteredEmails.length}
               </span>
             </div>
 
@@ -501,14 +663,14 @@ export const Inbox: React.FC = () => {
         </div>
 
         {/* Bulk Action Toolbar */}
-        {emails.length > 0 && (
+        {filteredEmails.length > 0 && (
           <div className="px-3 py-1.5 border-b border-[#E3E9ED] bg-[#F5F7F8] flex items-center justify-between text-xs text-[#687786]">
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSelectAll}
                 className="text-[#687786] hover:text-[#202B35] flex items-center gap-1.5 cursor-pointer"
               >
-                {selectedIds.length === emails.length && emails.length > 0 ? (
+                {selectedIds.length === filteredEmails.length && filteredEmails.length > 0 ? (
                   <CheckSquare className="w-3.5 h-3.5 text-[#16877A]" />
                 ) : (
                   <Square className="w-3.5 h-3.5" />
@@ -524,13 +686,6 @@ export const Inbox: React.FC = () => {
 
             {selectedIds.length > 0 && (
               <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handleBulkMarkRead(true)}
-                  className="p-1 hover:bg-[#E3E9ED] rounded text-[#202B35]"
-                  title="Mark read"
-                >
-                  <MailCheck className="w-3.5 h-3.5" />
-                </button>
                 <button
                   onClick={handleBulkMarkCompleted}
                   className="p-1 hover:bg-[#E3E9ED] rounded text-[#16877A]"
@@ -567,44 +722,51 @@ export const Inbox: React.FC = () => {
 
         {/* Email Cards List */}
         <div className="flex-1 overflow-y-auto divide-y divide-[#E3E9ED]">
-          {loading && emails.length === 0 ? (
+          {loading && allEmails.length === 0 ? (
             <div className="p-4 space-y-3">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="h-18 bg-[#F5F7F8] rounded animate-pulse" />
               ))}
             </div>
-          ) : emails.length === 0 ? (
+          ) : filteredEmails.length === 0 ? (
             <div className="p-8 text-center">
               <EmptyState
                 icon={InboxIcon}
-                title="No emails match your filter"
-                description="Try clearing search or filters to see all messages."
+                title={
+                  readFilter === 'unread'
+                    ? 'All caught up!'
+                    : readFilter === 'read'
+                    ? 'No read emails'
+                    : 'No emails match your filter'
+                }
+                description={
+                  readFilter === 'unread'
+                    ? 'No unread emails in your inbox.'
+                    : readFilter === 'read'
+                    ? 'Open any email to mark it as read.'
+                    : 'Try clearing search or filters to see all messages.'
+                }
                 action={
                   <button
                     onClick={handleReset}
                     className="px-3 py-1.5 text-xs font-medium text-[#16877A] border border-[#16877A]/40 rounded hover:bg-[#E8F4F1] transition"
                   >
-                    Clear Filters
+                    {readFilter !== 'all' ? 'View All Mail' : 'Clear Filters'}
                   </button>
                 }
               />
             </div>
           ) : (
-            emails.map((email) => {
+            filteredEmails.map((email) => {
               const isSelected = selectedEmailId === email.internal_id;
               const isChecked = selectedIds.includes(email.internal_id);
 
               return (
                 <div
                   key={email.internal_id}
-                  onClick={() => {
-                    setSelectedEmailId(email.internal_id);
-                    const next = new URLSearchParams(searchParams);
-                    next.set('id', email.internal_id);
-                    setSearchParams(next);
-                  }}
+                  onClick={() => handleOpenEmail(email)}
                   className={cn(
-                    'p-3 cursor-pointer transition select-none relative group',
+                    'px-3 py-2.5 cursor-pointer transition select-none relative group',
                     isSelected
                       ? 'bg-[#EDF3F8]/60 border-l-[3px] border-[#16877A]'
                       : 'hover:bg-[#F5F7F8] border-l-[3px] border-transparent',
@@ -639,34 +801,34 @@ export const Inbox: React.FC = () => {
                       </span>
                     </div>
 
-                    <span className="text-[10px] font-mono text-[#687786] shrink-0">
-                      {formatRelativeTime(email.received_at)}
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {email.has_attachments && (
+                        <span
+                          className="text-[10px] text-[#687786] flex items-center gap-0.5 font-mono"
+                          title={`${email.attachments.length} attachment(s)`}
+                        >
+                          <Paperclip className="w-3 h-3 text-[#687786]" />
+                          {email.attachments.length > 1 && email.attachments.length}
+                        </span>
+                      )}
+                      <span className="text-[10px] font-mono text-[#687786]">
+                        {formatRelativeTime(email.received_at)}
+                      </span>
+                    </div>
                   </div>
 
                   <p
                     className={cn(
-                      'text-xs truncate mb-1 pl-5',
+                      'text-xs truncate mb-0.5 pl-5',
                       !email.is_read ? 'font-semibold text-[#172B3A]' : 'text-[#202B35]'
                     )}
                   >
                     {email.subject}
                   </p>
 
-                  <p className="text-[11px] text-[#687786] line-clamp-1 mb-2 pl-5">
+                  <p className="text-[11px] text-[#687786] line-clamp-1 pl-5">
                     {email.triage?.summary || email.body_plain}
                   </p>
-
-                  <div className="flex items-center gap-1.5 pl-5">
-                    <PriorityBadge priority={email.triage?.priority || 'Low'} size="sm" />
-                    <CategoryBadge category={email.triage?.category || 'Other'} size="sm" />
-                    {email.has_attachments && (
-                      <span className="text-[10px] text-[#687786] flex items-center gap-0.5 ml-auto font-mono">
-                        <Paperclip className="w-3 h-3 text-[#687786]" />
-                        {email.attachments.length}
-                      </span>
-                    )}
-                  </div>
                 </div>
               );
             })
@@ -680,15 +842,8 @@ export const Inbox: React.FC = () => {
           <EmailDetailView
             email={selectedEmail}
             onClose={() => setSelectedEmailId(null)}
-            onToggleRead={async (id, isRead) => {
-              setEmails((prev) =>
-                prev.map((e) => (e.internal_id === id ? { ...e, is_read: isRead } : e))
-              );
-              await api.markRead([id], isRead);
-              loadEmails(true);
-            }}
             onMarkCompleted={async (id) => {
-              setEmails((prev) =>
+              setAllEmails((prev) =>
                 prev.map((e) =>
                   e.internal_id === id
                     ? {

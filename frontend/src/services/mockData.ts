@@ -343,7 +343,7 @@ export const INITIAL_MOCK_EMAILS: EmailRecord[] = [
     "body_plain": "Hi Accounts Team,\nI am following up regarding invoice INV-2026-1042 for AUD 4,850.00, which was issued on 10 November 2026.\nThe payment is due today, 24 November 2026. Could you please confirm whether the payment has been processed?\nIf payment has already been made, kindly share the transaction reference.\nPlease treat this as urgent, as we need to close our accounts for this month.\nRegards,\nJames Wilson\nFinance Manager\nWilson & Associates\nPhone: +61 412 345 678",
     "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\"><p>Hi Accounts Team,</p><p>I am following up regarding invoice INV-2026-1042 for AUD 4,850.00, which was issued on 10 November 2026.</p><p>The payment is due today, 24 November 2026. Could you please confirm whether the payment has been processed?</p><p>If payment has already been made, kindly share the transaction reference.</p><p>Please treat this as urgent, as we need to close our accounts for this month.</p><p>Regards,</p><p>James Wilson<br>Finance Manager<br>Wilson &amp; Associates<br>Phone: +61 412 345 678</p></div></body></html>",
     "received_at": "2026-11-24T08:29:20Z",
-    "is_read": false,
+    "is_read": true,
     "has_attachments": false,
     "attachments": [],
     "triage": {
@@ -426,7 +426,7 @@ export const INITIAL_MOCK_EMAILS: EmailRecord[] = [
     "body_plain": "i will check the doc\nOn Tue, 24 Nov 2026 at 10:26, Chandni Poddar < poddarchandni5@gmail.com > wrote:\nHi Team,\nPlease find attached our tax invoice for $12,500.00 AUD (including $1,136.36 GST) for Acme Holdings Pty Ltd.\nPayment is due by 30 November. Could you please reconcile and confirm receipt?",
     "body_html": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><div dir=\"ltr\">i will check the doc<div><br></div></div><br><div class=\"gmail_quote gmail_quote_container\"><div dir=\"ltr\" class=\"gmail_attr\">On Tue, 24 Nov 2026 at 10:26, Chandni Poddar &lt;<a href=\"mailto:poddarchandni5@gmail.com\">poddarchandni5@gmail.com</a>&gt; wrote:<br></div><blockquote class=\"gmail_quote\" style=\"margin:0px 0px 0px 0.8ex; border-left:1px solid rgb(204,204,204); padding-left:1ex\"><div dir=\"ltr\"><span>Hi </span><span>Team,</span><span><br></span><span></span><span></span><span>Please </span><span>find </span><span>attached </span><span>our </span><span>tax </span><span>invoice </span><span>for </span><span>$12,500.00 </span><span>AUD </span><span>(including </span><span>$1,136.36 </span><span>GST) </span><span>for </span><span>Acme </span><span>Holdings </span><span>Pty </span><span>Ltd.</span><span><br></span><span></span><span></span><span>Payment </span><span>is </span><span>due </span><span>by </span><span>30 </span><span>November. </span><span>Could </span><span>you </span><span>please </span><span>reconcile </span><span>and </span><span>confirm </span><span>receipt?</span></div></blockquote></div></body></html>",
     "received_at": "2026-11-24T08:05:44Z",
-    "is_read": false,
+    "is_read": true,
     "has_attachments": false,
     "attachments": [],
     "triage": {

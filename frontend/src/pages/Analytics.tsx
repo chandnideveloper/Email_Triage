@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -25,24 +25,106 @@ import {
   Building,
 } from 'lucide-react';
 import { api } from '@/services/api';
-import { DashboardMetrics } from '@/types';
+import { DashboardMetrics, EmailRecord, Priority } from '@/types';
 import { PriorityBadge } from '@/components/common/PriorityBadge';
 
 export const Analytics: React.FC = () => {
   const [data, setData] = useState<DashboardMetrics | null>(null);
+  const [emails, setEmails] = useState<EmailRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
-        const m = await api.getDashboardMetrics();
+        const [m, emailRes] = await Promise.all([
+          api.getDashboardMetrics(),
+          api.getEmails(),
+        ]);
         setData(m);
+        setEmails(emailRes.items || []);
       } finally {
         setLoading(false);
       }
     })();
   }, []);
+
+  const clientVolume = useMemo(() => {
+    if (!emails || emails.length === 0) return [];
+
+    const priorityRank: Record<string, number> = {
+      Critical: 4,
+      High: 3,
+      Medium: 2,
+      Low: 1,
+    };
+
+    const map = new Map<
+      string,
+      {
+        client: string;
+        emailAddr: string;
+        emails: number;
+        categoryCounts: Record<string, number>;
+        maxPriority: Priority;
+        statuses: string[];
+      }
+    >();
+
+    emails.forEach((e) => {
+      // Group strictly by actual email sender ID / name
+      const clientName = (e.sender_name || e.sender_email || 'Unknown').trim();
+      const existing = map.get(clientName) || {
+        client: clientName,
+        emailAddr: e.sender_email || '',
+        emails: 0,
+        categoryCounts: {},
+        maxPriority: 'Low' as Priority,
+        statuses: [],
+      };
+
+      existing.emails += 1;
+      const cat = e.triage?.category || 'Other';
+      existing.categoryCounts[cat] = (existing.categoryCounts[cat] || 0) + 1;
+
+      const p = e.triage?.priority || 'Low';
+      if ((priorityRank[p] || 0) > (priorityRank[existing.maxPriority] || 0)) {
+        existing.maxPriority = p;
+      }
+
+      existing.statuses.push(e.processing_status);
+      map.set(clientName, existing);
+    });
+
+    return Array.from(map.values())
+      .map((item) => {
+        let primaryCat = 'Other';
+        let maxCatCount = 0;
+        Object.entries(item.categoryCounts).forEach(([cat, cnt]) => {
+          if (cnt > maxCatCount) {
+            maxCatCount = cnt;
+            primaryCat = cat;
+          }
+        });
+
+        let displayStatus = 'Triaged';
+        if (item.statuses.includes('COMPLETED')) {
+          displayStatus = 'Reconciled';
+        } else if (item.statuses.includes('FAILED')) {
+          displayStatus = 'Needs Review';
+        }
+
+        return {
+          client: item.client,
+          emailAddr: item.emailAddr,
+          emails: item.emails,
+          category: primaryCat,
+          priority: item.maxPriority,
+          status: displayStatus,
+        };
+      })
+      .sort((a, b) => b.emails - a.emails);
+  }, [emails]);
 
   if (loading || !data) {
     return (
@@ -66,14 +148,6 @@ export const Analytics: React.FC = () => {
     fullName: item.name,
     count: item.value,
   }));
-
-  const clientVolume = [
-    { client: 'Acme Pty Ltd', emails: 4, category: 'Invoice / Finance', priority: 'Critical', status: 'Reconciled' },
-    { client: 'Ayushi Singh', emails: 3, category: 'Invoice / Finance', priority: 'Medium', status: 'Triaged' },
-    { client: 'Chandni Poddar', emails: 2, category: 'Invoice / Finance', priority: 'Critical', status: 'Needs Review' },
-    { client: 'Sydney Coastal Logistics', emails: 1, category: 'Client Communication', priority: 'High', status: 'Reconciled' },
-    { client: 'Thornton Group Trust', emails: 1, category: 'Meeting / Scheduling', priority: 'Low', status: 'Triaged' },
-  ];
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
@@ -244,7 +318,7 @@ export const Analytics: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-[#F5F7F8] border-b border-[#E3E9ED] text-[#687786] font-mono text-[11px]">
-                <th className="py-2.5 px-3">Client Entity</th>
+                <th className="py-2.5 px-3">Client (Sender)</th>
                 <th className="py-2.5 px-3">Messages</th>
                 <th className="py-2.5 px-3">Primary Category</th>
                 <th className="py-2.5 px-3">Max Urgency</th>
@@ -252,24 +326,39 @@ export const Analytics: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E3E9ED]">
-              {clientVolume.map((row, i) => (
-                <tr key={i} className="hover:bg-[#F5F7F8] transition">
-                  <td className="py-2.5 px-3 font-medium text-[#202B35] flex items-center gap-2">
-                    <Building className="w-3.5 h-3.5 text-[#687786]" />
-                    {row.client}
-                  </td>
-                  <td className="py-2.5 px-3 font-mono text-[#202B35]">{row.emails}</td>
-                  <td className="py-2.5 px-3 text-[#687786]">{row.category}</td>
-                  <td className="py-2.5 px-3">
-                    <PriorityBadge priority={row.priority} size="sm" />
-                  </td>
-                  <td className="py-2.5 px-3 text-right">
-                    <span className="text-[11px] font-mono font-medium text-[#16877A] bg-[#E8F4F1] border border-[#C6E6DF] px-2 py-0.5 rounded">
-                      {row.status}
-                    </span>
+              {clientVolume.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-xs text-[#687786] font-mono">
+                    No client correspondence found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                clientVolume.map((row, i) => (
+                  <tr key={i} className="hover:bg-[#F5F7F8] transition">
+                    <td className="py-2.5 px-3 font-medium text-[#202B35] flex items-center gap-2">
+                      <UserCheck className="w-3.5 h-3.5 text-[#16877A] shrink-0" />
+                      <div>
+                        <span className="font-semibold block">{row.client}</span>
+                        {row.emailAddr && (
+                          <span className="text-[10px] text-[#687786] font-mono block">
+                            {row.emailAddr}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-3 font-mono text-[#202B35]">{row.emails}</td>
+                    <td className="py-2.5 px-3 text-[#687786]">{row.category}</td>
+                    <td className="py-2.5 px-3">
+                      <PriorityBadge priority={row.priority} size="sm" />
+                    </td>
+                    <td className="py-2.5 px-3 text-right">
+                      <span className="text-[11px] font-mono font-medium text-[#16877A] bg-[#E8F4F1] border border-[#C6E6DF] px-2 py-0.5 rounded">
+                        {row.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

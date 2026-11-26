@@ -6,7 +6,6 @@ import { ToastProvider } from '@/components/ui/Toast';
 import { MainLayout } from '@/layouts/MainLayout';
 import { Dashboard } from '@/pages/Dashboard';
 import { Inbox } from '@/pages/Inbox';
-import { Analytics } from '@/pages/Analytics';
 import { Attachments } from '@/pages/Attachments';
 import { Settings } from '@/pages/Settings';
 import { Login } from '@/pages/Login';
@@ -50,7 +49,7 @@ export const App: React.FC = () => {
                 <Route index element={<Dashboard />} />
                 <Route path="inbox" element={<Inbox />} />
                 <Route path="inbox/:id" element={<Inbox />} />
-                <Route path="analytics" element={<Analytics />} />
+                <Route path="analytics" element={<Navigate to="/" replace />} />
                 <Route path="attachments" element={<Attachments />} />
                 <Route path="documents" element={<Attachments />} />
                 <Route path="settings" element={<Settings />} />
